@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meddo — Doctor Dashboard</title>
+  <meta name="description" content="Meddo doctor dashboard — search patients, view visit histories, AI-powered insights.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body class="dashboard-body">
+
+  <!-- Navbar -->
+  <nav class="navbar dashboard-nav" id="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">&#x1FA7A;</span> Meddo
+      </a>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html">Home</a>
+        <a href="admin.html" class="active">Dashboard</a>
+      </div>
+      <div class="nav-doctor-info">
+        <span class="doctor-avatar">DS</span>
+        <span class="doctor-name">Dr. Suresh</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Dashboard Content -->
+  <main class="dashboard-main">
+    <div class="container">
+
+      <!-- Dashboard Header -->
+      <div class="dash-header">
+        <div class="dash-header-left">
+          <h1 class="dash-title">Patient Dashboard</h1>
+          <p class="dash-subtitle">Manage your patients, view histories, and AI-powered insights</p>
+        </div>
+        <div class="dash-header-right">
+          <div class="dash-stats-row">
+            <div class="dash-stat">
+              <span class="dash-stat-number" id="total-patients">5</span>
+              <span class="dash-stat-label">Patients</span>
+            </div>
+            <div class="dash-stat">
+              <span class="dash-stat-number" id="total-visits">16</span>
+              <span class="dash-stat-label">Total Visits</span>
+            </div>
+            <div class="dash-stat">
+              <span class="dash-stat-number dash-stat-alert" id="alerts-count">2</span>
+              <span class="dash-stat-label">Alerts</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Filter Bar -->
+      <div class="search-bar-wrapper">
+        <div class="search-input-wrap">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <input type="text" id="patient-search" class="search-input" placeholder="Search by name, condition, or language...">
+        </div>
+        <div class="filter-chips">
+          <button class="filter-chip active" data-filter="all">All</button>
+          <button class="filter-chip" data-filter="critical">Needs Attention</button>
+          <button class="filter-chip" data-filter="monitoring">Monitoring</button>
+          <button class="filter-chip" data-filter="stable">Stable</button>
+        </div>
+      </div>
+
+      <!-- Patient Cards Grid -->
+      <div class="patient-grid" id="patient-grid">
+        <!-- Cards populated by JS -->
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" id="empty-state" style="display: none;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <p>No patients match your search</p>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/data.js"></script>
+  <script>
+    // Render patient cards
+    const grid = document.getElementById('patient-grid');
+    const searchInput = document.getElementById('patient-search');
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const emptyState = document.getElementById('empty-state');
+
+    let activeFilter = 'all';
+
+    function renderPatients(filter = 'all', query = '') {
+      grid.innerHTML = '';
+      const q = query.toLowerCase();
+
+      const filtered = PATIENTS.filter(p => {
+        const matchesFilter = filter === 'all' || p.status === filter;
+        const matchesQuery = !q ||
+          p.name.toLowerCase().includes(q) ||
+          p.conditions.join(' ').toLowerCase().includes(q) ||
+          p.language_name.toLowerCase().includes(q) ||
+          p.id.toLowerCase().includes(q);
+        return matchesFilter && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        emptyState.style.display = 'flex';
+        grid.style.display = 'none';
+        return;
+      }
+      emptyState.style.display = 'none';
+      grid.style.display = 'grid';
+
+      filtered.forEach(p => {
+        const lastVisit = p.visits[p.visits.length - 1];
+        const alertInsights = p.ai_insights.filter(i => i.type === 'alert');
+        const initials = p.name.split(' ').map(n => n[0]).join('');
+
+        const card = document.createElement('a');
+        card.href = `patient.html?id=${p.id}`;
+        card.className = `patient-card pc-status-${p.status}`;
+        card.innerHTML = `
+          <div class="pc-top-accent"></div>
+          <div class="pc-body">
+            <div class="pc-header">
+              <div class="pc-avatar-wrap">
+                <div class="pc-avatar pc-avatar-${p.status}">${initials}</div>
+                <span class="pc-status-dot pc-dot-${p.status}"></span>
+              </div>
+              <div class="pc-info">
+                <h3 class="pc-name">${p.name}</h3>
+                <span class="pc-meta">${p.age} yrs &middot; ${p.gender} &middot; ${p.blood_group}</span>
+              </div>
+            </div>
+            <div class="pc-conditions">
+              ${p.conditions.map(c => `<span class="pc-condition">${c}</span>`).join('')}
+            </div>
+            <div class="pc-stats-grid">
+              <div class="pc-stat">
+                <span class="pc-stat-num">${p.visits.length}</span>
+                <span class="pc-stat-label">Visits</span>
+              </div>
+              <div class="pc-stat">
+                <span class="pc-stat-num">${p.last_visit}</span>
+                <span class="pc-stat-label">Last Visit</span>
+              </div>
+              <div class="pc-stat">
+                <span class="pc-stat-num">${p.language_name}</span>
+                <span class="pc-stat-label">Language</span>
+              </div>
+            </div>
+            <div class="pc-insight-slot ${alertInsights.length > 0 ? 'has-alert' : 'no-alert'}">
+              ${alertInsights.length > 0 ? `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>${alertInsights[0].title}</span>
+              ` : `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <span>${getStatusLabel(p.status)}</span>
+              `}
+            </div>
+          </div>
+          <div class="pc-footer">
+            <span class="pc-view-link">View History</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Search
+    searchInput.addEventListener('input', () => {
+      renderPatients(activeFilter, searchInput.value);
+    });
+
+    // Filter chips
+    filterChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        filterChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeFilter = chip.dataset.filter;
+        renderPatients(activeFilter, searchInput.value);
+      });
+    });
+
+    // Initial render
+    renderPatients();
+  </script>
+</body>
+</html>

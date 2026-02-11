@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(SARVAM_API_KEY=sk_ty5by96e_1tspiQNWgpfdQMhKU2Kir8ZL python3:*)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(npx vercel dev:*)",
+      "Bash(python3 -m http.server:*)",
+      "Bash(node server.js:*)"
+    ]
+  }
+}
