@@ -20,7 +20,8 @@
       </a>
       <div class="nav-links" id="nav-links">
         <a href="index.html">Home</a>
-        <a href="admin.html">Dashboard</a>
+        <a href="calendar.html">Appointments</a>
+        <a href="admin.html">All Patients</a>
       </div>
       <div class="nav-doctor-info">
         <span class="doctor-avatar">DS</span>
@@ -111,6 +112,60 @@
     const patientId = params.get('id');
     const patient = getPatientById(patientId);
 
+    // ═══════════════════════════════════════════
+    // MERGE DICTATED RECORDS FROM LOCALSTORAGE
+    // ═══════════════════════════════════════════
+    function mergeDictatedRecords(p) {
+      const records = JSON.parse(localStorage.getItem('meddo_records') || '[]');
+      const patientRecords = records.filter(r => r.patient_id === p.id);
+
+      if (patientRecords.length === 0) return;
+
+      const langNames = {
+        'hi-IN': 'Hindi', 'kn-IN': 'Kannada', 'ta-IN': 'Tamil',
+        'te-IN': 'Telugu', 'ml-IN': 'Malayalam', 'bn-IN': 'Bengali',
+        'mr-IN': 'Marathi', 'gu-IN': 'Gujarati', 'en-IN': 'English'
+      };
+
+      patientRecords.forEach(rec => {
+        // Skip if already merged (check by timestamp)
+        const alreadyExists = p.visits.some(v => v.dictated_at === rec.timestamp);
+        if (alreadyExists) return;
+
+        const notes = rec.notes || {};
+        const visitDate = new Date(rec.timestamp);
+        const dateStr = visitDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+        const visit = {
+          visit_number: p.visits.length + 1,
+          date: rec.timestamp.split('T')[0],
+          date_display: dateStr,
+          tag: notes.diagnosis || 'AI Dictation',
+          tag_type: notes.urgency === 'urgent' ? 'urgent' : notes.urgency === 'follow-up' ? 'followup' : 'routine',
+          dictated_at: rec.timestamp,
+          is_dictated: true,
+          details: {
+            symptoms: Array.isArray(notes.symptoms) ? notes.symptoms : (notes.symptoms ? [notes.symptoms] : ['—']),
+            vitals: notes.vitals || {},
+            diagnosis: notes.diagnosis || '—',
+            prescription: notes.prescription || [],
+            tests_ordered: notes.tests_ordered || [],
+            follow_up: notes.follow_up || '—',
+            notes: rec.summary_en || notes.notes || `Dictated in ${langNames[rec.language] || rec.language}. Transcript: "${rec.transcript}"`
+          },
+          doctor: 'Dr. Suresh (AI Scribe)'
+        };
+
+        p.visits.push(visit);
+      });
+
+      // Update last_visit display
+      if (p.visits.length > 0) {
+        const latest = p.visits[p.visits.length - 1];
+        p.last_visit = latest.date_display;
+      }
+    }
+
     if (!patient) {
       document.querySelector('.dashboard-main .container').innerHTML = `
         <div class="empty-state" style="display:flex; margin-top: 100px;">
@@ -120,6 +175,7 @@
         </div>
       `;
     } else {
+      mergeDictatedRecords(patient);
       document.title = `Meddo — ${patient.name}`;
       renderPatientPage(patient);
     }
@@ -206,25 +262,26 @@
       // Render visits in reverse chronological order
       [...p.visits].reverse().forEach((visit, idx) => {
         const tagClass = getTagClass(visit.tag_type);
-        const prescriptions = visit.details.prescription
+        const prescriptions = visit.details.prescription && visit.details.prescription.length > 0
           ? visit.details.prescription.map(rx => `${rx.medicine} ${rx.dosage} ${rx.frequency}`).join('; ')
           : '—';
         const tests = visit.details.tests_ordered && visit.details.tests_ordered.length > 0
           ? visit.details.tests_ordered.join(', ')
           : null;
-        const vitals = visit.details.vitals;
-        const vitalEntries = Object.entries(vitals).map(([k, v]) => `<span class="vt-chip">${k.toUpperCase()}: ${v}</span>`).join('');
+        const vitals = visit.details.vitals || {};
+        const vitalEntries = Object.entries(vitals).filter(([k, v]) => v).map(([k, v]) => `<span class="vt-chip">${k.toUpperCase()}: ${v}</span>`).join('');
+        const dictatedBadge = visit.is_dictated ? '<span class="vd-dictated-badge">AI Scribe</span>' : '';
 
         const card = document.createElement('div');
-        card.className = `visit-detail-card ${tagClass}`;
+        card.className = `visit-detail-card ${tagClass}${visit.is_dictated ? ' vd-dictated' : ''}`;
         card.style.animationDelay = `${idx * 100}ms`;
         card.innerHTML = `
           <div class="vd-header">
-            <div class="vd-visit-num">Visit ${visit.visit_number}</div>
+            <div class="vd-visit-num">Visit ${visit.visit_number} ${dictatedBadge}</div>
             <div class="vd-date">${visit.date_display}</div>
             <span class="vd-tag ${tagClass}">${visit.tag}</span>
           </div>
-          <div class="vd-vitals">${vitalEntries}</div>
+          ${vitalEntries ? `<div class="vd-vitals">${vitalEntries}</div>` : ''}
           <div class="vd-sections">
             <div class="vd-section">
               <span class="vd-section-label">Symptoms</span>
@@ -311,12 +368,21 @@
     function generateSummary(p) {
       const lastVisit = p.visits[p.visits.length - 1];
       const firstVisit = p.visits[0];
-      const allSymptoms = [...new Set(p.visits.flatMap(v => v.details.symptoms))];
-      const currentMeds = lastVisit.details.prescription.map(rx => `${rx.medicine} ${rx.dosage}`).join(', ');
+      const allSymptoms = [...new Set(p.visits.flatMap(v => v.details.symptoms).filter(s => s && s !== '—'))];
+      const lastRx = lastVisit.details.prescription || [];
+      const currentMeds = lastRx.length > 0
+        ? lastRx.map(rx => `${rx.medicine} ${rx.dosage}`).join(', ')
+        : '—';
+
+      const dictatedCount = p.visits.filter(v => v.is_dictated).length;
+      const dictatedNote = dictatedCount > 0
+        ? `<p class="summary-new"><strong>New:</strong> ${dictatedCount} visit${dictatedCount > 1 ? 's' : ''} recorded via AI Scribe today.</p>`
+        : '';
 
       return `
         <p><strong>${p.name}</strong>, ${p.age}-year-old ${p.gender.toLowerCase()}, has been seen
         <strong>${p.visits.length} times</strong> since ${firstVisit.date_display}.</p>
+        ${dictatedNote}
         <p><strong>Current conditions:</strong> ${p.conditions.join(', ')}</p>
         <p><strong>Reported symptoms across visits:</strong> ${allSymptoms.join(', ')}</p>
         <p><strong>Current medications:</strong> ${currentMeds}</p>

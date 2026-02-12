@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meddo — Live Demo</title>
+  <meta name="description" content="Meddo live demo — full doctor workflow with AI-powered scribe, patient history, and appointment management.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500&family=Noto+Sans+Tamil:wght@400;500&family=Noto+Sans+Telugu:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/demo.css">
+</head>
+<body class="demo-app">
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SIDEBAR                                 -->
+  <!-- ═══════════════════════════════════════ -->
+  <aside class="app-sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">&#x1FA7A;</span> Meddo
+    </div>
+
+    <div class="sidebar-doctor">
+      <div class="sidebar-doc-avatar">DS</div>
+      <div>
+        <div class="sidebar-doc-name">Dr. Suresh</div>
+        <div class="sidebar-doc-role">General Physician</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="sidebar-nav-item active" data-view="calendar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Calendar
+      </button>
+      <button class="sidebar-nav-item" data-view="patients">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Patients
+      </button>
+
+      <div class="sidebar-nav-divider"></div>
+
+      <button class="sidebar-nav-item" onclick="window.open('index.html', '_blank')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Back to Home
+      </button>
+    </nav>
+
+    <div class="sidebar-stats">
+      <div class="sidebar-stat-row">
+        <span class="sidebar-stat-label">Today</span>
+        <span class="sidebar-stat-value" id="stat-today">0</span>
+      </div>
+      <div class="sidebar-stat-row">
+        <span class="sidebar-stat-label">This Week</span>
+        <span class="sidebar-stat-value" id="stat-week">0</span>
+      </div>
+      <div class="sidebar-stat-row">
+        <span class="sidebar-stat-label">Patients</span>
+        <span class="sidebar-stat-value" id="stat-patients">5</span>
+      </div>
+    </div>
+
+    <div class="sidebar-theme-toggle">
+      <button class="theme-toggle-btn" id="theme-toggle" title="Toggle dark/light mode">
+        <svg class="theme-icon-light" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="theme-icon-dark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <span class="theme-label" id="theme-label">Light Mode</span>
+      </button>
+    </div>
+
+    <div class="sidebar-powered">Powered by Sarvam AI</div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- MAIN CONTENT                            -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="app-main">
+
+    <!-- Top Bar -->
+    <header class="app-topbar" id="app-topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-title" id="topbar-title">Appointments</div>
+          <div class="topbar-subtitle" id="topbar-subtitle"></div>
+        </div>
+      </div>
+      <div class="topbar-center" id="topbar-center">
+        <div class="topbar-week-nav">
+          <button class="week-nav-btn" id="week-prev">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <span class="week-label" id="week-label"></span>
+          <button class="week-nav-btn" id="week-next">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+        <button class="today-btn" id="today-btn">Today</button>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-legend">
+          <span class="legend-item"><span class="legend-dot urgent"></span> Urgent</span>
+          <span class="legend-item"><span class="legend-dot followup"></span> Follow-up</span>
+          <span class="legend-item"><span class="legend-dot routine"></span> Routine</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Views -->
+    <div class="app-content">
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- CALENDAR VIEW                       -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="view active" id="view-calendar">
+        <div class="cal-layout">
+          <div class="cal-grid-wrap" id="cal-grid-wrap">
+            <!-- Grid populated by JS -->
+          </div>
+          <div class="cal-side-panel" id="cal-side-panel">
+            <div class="side-panel-inner" id="side-panel-inner">
+              <!-- Populated when appointment clicked -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- PATIENTS VIEW                       -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="view" id="view-patients">
+        <div class="patients-view-inner">
+          <div class="pv-search-bar">
+            <div class="pv-search-wrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input type="text" class="pv-search-input" id="pv-search" placeholder="Search by name, condition, or language...">
+            </div>
+            <div class="pv-filter-chips">
+              <button class="pv-filter-chip active" data-filter="all">All</button>
+              <button class="pv-filter-chip" data-filter="critical">Needs Attention</button>
+              <button class="pv-filter-chip" data-filter="monitoring">Monitoring</button>
+              <button class="pv-filter-chip" data-filter="stable">Stable</button>
+            </div>
+            <div class="pv-view-toggle">
+              <button class="pv-toggle-btn" data-mode="cards" title="Card view">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              </button>
+              <button class="pv-toggle-btn active" data-mode="table" title="Table view">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="9" y1="6" x2="9" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="pv-grid" id="pv-grid" style="display:none;">
+            <!-- Patient cards populated by JS -->
+          </div>
+          <div class="pv-table-wrap" id="pv-table-wrap">
+            <table class="pv-table" id="pv-table">
+              <!-- Table populated by JS -->
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- PATIENT DETAIL VIEW                 -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="view" id="view-patient-detail">
+        <div class="pd-view-inner" id="pd-view-inner">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- DICTATION VIEW                      -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="view" id="view-dictate">
+        <div class="dict-view-inner" id="dict-view-inner">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script>
+  // ═══════════════════════════════════════════
+  // STATE
+  // ═══════════════════════════════════════════
+  let currentView = 'calendar';
+  let currentWeekStart = getMonday(new Date());
+  let selectedApt = null;
+  let dictPatient = null;
+  let dictAptReason = '';
+  let pvViewMode = 'table'; // 'cards' or 'table'
+
+  // ═══════════════════════════════════════════
+  // NAVIGATION
+  // ═══════════════════════════════════════════
+  const views = document.querySelectorAll('.view');
+  const navItems = document.querySelectorAll('.sidebar-nav-item[data-view]');
+
+  function switchView(viewName, skipNav) {
+    currentView = viewName;
+    views.forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + viewName).classList.add('active');
+
+    if (!skipNav) {
+      navItems.forEach(n => n.classList.remove('active'));
+      navItems.forEach(n => { if (n.dataset.view === viewName) n.classList.add('active'); });
+    }
+
+    // Update topbar
+    const topCenter = document.getElementById('topbar-center');
+    const topTitle = document.getElementById('topbar-title');
+    const topSub = document.getElementById('topbar-subtitle');
+    const topRight = document.querySelector('.topbar-right');
+
+    if (viewName === 'calendar') {
+      topTitle.textContent = 'Appointments';
+      topSub.textContent = '';
+      topCenter.style.display = 'flex';
+      topRight.style.display = 'flex';
+    } else if (viewName === 'patients') {
+      topTitle.textContent = 'All Patients';
+      topSub.textContent = PATIENTS.length + ' patients';
+      topCenter.style.display = 'none';
+      topRight.style.display = 'none';
+    } else if (viewName === 'patient-detail') {
+      topCenter.style.display = 'none';
+      topRight.style.display = 'none';
+    } else if (viewName === 'dictate') {
+      topTitle.textContent = 'Dictate Notes';
+      topSub.textContent = '';
+      topCenter.style.display = 'none';
+      topRight.style.display = 'none';
+    }
+  }
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const view = item.dataset.view;
+      if (view) {
+        switchView(view);
+        if (view === 'patients') {
+          renderPatientsList();
+          renderPatientsTable();
+        }
+      }
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // CALENDAR
+  // ═══════════════════════════════════════════
+  const TIME_SLOTS = [
+    { hour: 9,  label: '9 AM' },
+    { hour: 10, label: '10 AM' },
+    { hour: 11, label: '11 AM' },
+    { hour: 12, label: '12 PM' },
+    { hour: 13, label: '1 PM' },
+    { hour: 14, label: '2 PM' },
+    { hour: 15, label: '3 PM' },
+  ];
+
+  function getMonday(d) {
+    const date = new Date(d);
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    date.setDate(diff);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+
+  function formatDate(d) {
+    return d.toISOString().split('T')[0];
+  }
+
+  function renderCalendar() {
+    const wrap = document.getElementById('cal-grid-wrap');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = formatDate(today);
+
+    // Build week dates (Mon-Sat)
+    const weekDates = [];
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(currentWeekStart);
+      d.setDate(d.getDate() + i);
+      weekDates.push(d);
+    }
+
+    // Update week label
+    const weekStart = weekDates[0];
+    const weekEnd = weekDates[5];
+    const startMonth = weekStart.toLocaleDateString('en-US', { month: 'short' });
+    const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
+    const monthLabel = startMonth === endMonth
+      ? `${weekStart.getDate()} - ${weekEnd.getDate()} ${startMonth} ${weekEnd.getFullYear()}`
+      : `${weekStart.getDate()} ${startMonth} - ${weekEnd.getDate()} ${endMonth} ${weekEnd.getFullYear()}`;
+    document.getElementById('week-label').textContent = monthLabel;
+
+    // Grid rows: 1 header row + TIME_SLOTS.length data rows, all flex-fill
+    const rowTemplate = `auto ${TIME_SLOTS.map(() => '1fr').join(' ')}`;
+
+    let html = `<div class="cal-grid" style="grid-template-rows: ${rowTemplate};">`;
+
+    // ── Header row ──
+    html += '<div class="cal-day-header" style="border-bottom: 2px solid var(--border);"></div>';
+    weekDates.forEach(d => {
+      const isToday = formatDate(d) === todayStr;
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+      const dateNum = d.getDate();
+      html += `<div class="cal-day-header ${isToday ? 'is-today' : ''}">
+        <div class="cal-day-name">${dayName}</div>
+        <div class="cal-day-date">${dateNum}</div>
+      </div>`;
+    });
+
+    // ── Time rows (hourly) ──
+    TIME_SLOTS.forEach(slot => {
+      // Time label
+      html += `<div class="cal-time-label"><span>${slot.label}</span></div>`;
+
+      // Day cells for this hour
+      weekDates.forEach(d => {
+        const dateStr = formatDate(d);
+        const isToday = dateStr === todayStr;
+        html += `<div class="cal-cell ${isToday ? 'is-today-col' : ''}" data-date="${dateStr}" data-hour="${slot.hour}"></div>`;
+      });
+    });
+
+    html += '</div>';
+    wrap.innerHTML = html;
+
+    // ── Place appointment blocks ──
+    // Group appointments by date+hour so we can stack them
+    APPOINTMENTS.forEach(apt => {
+      const dateIdx = weekDates.findIndex(d => formatDate(d) === apt.date);
+      if (dateIdx === -1) return;
+
+      const [h] = apt.time.split(':').map(Number);
+      // Map appointment to nearest hour slot
+      const slotHour = h;
+      if (slotHour < TIME_SLOTS[0].hour || slotHour > TIME_SLOTS[TIME_SLOTS.length - 1].hour) return;
+
+      // Find the cell
+      const cell = wrap.querySelector(`.cal-cell[data-date="${apt.date}"][data-hour="${slotHour}"]`);
+      if (!cell) return;
+
+      const block = document.createElement('div');
+      block.className = `cal-apt-block type-${apt.type}`;
+      block.dataset.aptId = apt.id;
+      block.innerHTML = `
+        <div class="cal-apt-time">${formatTime12(apt.time)}</div>
+        <div class="cal-apt-name">${apt.patient_name}</div>
+        <div class="cal-apt-reason">${apt.reason}</div>
+      `;
+
+      block.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openSidePanel(apt);
+      });
+      cell.appendChild(block);
+    });
+
+    // Update stats
+    updateStats();
+  }
+
+  function formatTime12(time24) {
+    const [h, m] = time24.split(':').map(Number);
+    const suffix = h >= 12 ? 'PM' : 'AM';
+    const h12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+    return `${h12}:${String(m).padStart(2, '0')} ${suffix}`;
+  }
+
+  function updateStats() {
+    const today = formatDate(new Date());
+    const todayApts = APPOINTMENTS.filter(a => a.date === today);
+    document.getElementById('stat-today').textContent = todayApts.length;
+
+    // Week count
+    const weekDates = [];
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(currentWeekStart);
+      d.setDate(d.getDate() + i);
+      weekDates.push(formatDate(d));
+    }
+    const weekApts = APPOINTMENTS.filter(a => weekDates.includes(a.date));
+    document.getElementById('stat-week').textContent = weekApts.length;
+    document.getElementById('stat-patients').textContent = PATIENTS.length;
+  }
+
+  // Week navigation
+  document.getElementById('week-prev').addEventListener('click', () => {
+    currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+    renderCalendar();
+  });
+
+  document.getElementById('week-next').addEventListener('click', () => {
+    currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+    renderCalendar();
+  });
+
+  document.getElementById('today-btn').addEventListener('click', () => {
+    currentWeekStart = getMonday(new Date());
+    renderCalendar();
+  });
+
+  // ═══════════════════════════════════════════
+  // SIDE PANEL
+  // ═══════════════════════════════════════════
+  function openSidePanel(apt) {
+    selectedApt = apt;
+    const panel = document.getElementById('cal-side-panel');
+    const inner = document.getElementById('side-panel-inner');
+    const patient = getPatientById(apt.patient_id);
+
+    // Highlight selected block
+    document.querySelectorAll('.cal-apt-block').forEach(b => b.classList.remove('selected'));
+    const block = document.querySelector(`.cal-apt-block[data-apt-id="${apt.id}"]`);
+    if (block) block.classList.add('selected');
+
+    const initials = apt.patient_name.split(' ').map(n => n[0]).join('');
+    const alertInsights = patient ? patient.ai_insights.filter(i => i.type === 'alert') : [];
+    const lastVisit = patient && patient.visits.length > 0 ? patient.visits[patient.visits.length - 1] : null;
+
+    inner.innerHTML = `
+      <button class="sp-close" onclick="closeSidePanel()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+      </button>
+
+      <div class="sp-header">
+        <div class="sp-type-badge ${apt.type}">${apt.type}</div>
+        <div class="sp-time">${apt.date_display} &middot; ${formatTime12(apt.time)}</div>
+        <div class="sp-reason">${apt.reason}</div>
+      </div>
+
+      <div class="sp-patient">
+        <div class="sp-patient-avatar status-${apt.patient_status}">${initials}</div>
+        <div>
+          <div class="sp-patient-name">${apt.patient_name}</div>
+          <div class="sp-patient-meta">${apt.patient_age} yrs &middot; ${apt.patient_gender} &middot; ${apt.patient_language}</div>
+          <div class="sp-patient-conditions">
+            ${apt.patient_conditions.map(c => `<span class="sp-condition-chip">${c}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+
+      ${patient ? `
+      <div class="sp-info-section">
+        <div class="sp-info-title">Patient Info</div>
+        <div class="sp-info-row">
+          <span class="sp-info-label">Blood Group</span>
+          <span class="sp-info-value">${patient.blood_group}</span>
+        </div>
+        <div class="sp-info-row">
+          <span class="sp-info-label">Total Visits</span>
+          <span class="sp-info-value">${patient.visits.length}</span>
+        </div>
+        <div class="sp-info-row">
+          <span class="sp-info-label">Last Visit</span>
+          <span class="sp-info-value">${patient.last_visit}</span>
+        </div>
+        ${lastVisit && lastVisit.details.vitals ? `
+        <div class="sp-info-row">
+          <span class="sp-info-label">Last BP</span>
+          <span class="sp-info-value">${lastVisit.details.vitals.bp || 'N/A'}</span>
+        </div>
+        ` : ''}
+      </div>
+      ` : ''}
+
+      ${alertInsights.length > 0 ? `
+      <div class="sp-alert">
+        <svg class="sp-alert-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>
+          <div class="sp-alert-title">${alertInsights[0].title}</div>
+          <div class="sp-alert-text">${alertInsights[0].detail}</div>
+        </div>
+      </div>
+      ` : ''}
+
+      <div class="sp-actions">
+        <button class="sp-action-btn primary" onclick="startDictation('${apt.patient_id}', '${apt.reason.replace(/'/g, "\\'")}')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+          Start Dictation
+        </button>
+        <button class="sp-action-btn secondary" onclick="viewPatient('${apt.patient_id}')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          View Patient History
+        </button>
+      </div>
+    `;
+
+    panel.classList.add('open');
+  }
+
+  function closeSidePanel() {
+    document.getElementById('cal-side-panel').classList.remove('open');
+    document.querySelectorAll('.cal-apt-block').forEach(b => b.classList.remove('selected'));
+    selectedApt = null;
+  }
+
+  // Close side panel with Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSidePanel();
+  });
+
+  // ═══════════════════════════════════════════
+  // PATIENTS LIST
+  // ═══════════════════════════════════════════
+  let pvFilter = 'all';
+
+  function renderPatientsList(query = '') {
+    const grid = document.getElementById('pv-grid');
+    const q = query.toLowerCase();
+
+    const filtered = PATIENTS.filter(p => {
+      const matchesFilter = pvFilter === 'all' || p.status === pvFilter;
+      const matchesQuery = !q ||
+        p.name.toLowerCase().includes(q) ||
+        p.conditions.join(' ').toLowerCase().includes(q) ||
+        p.language_name.toLowerCase().includes(q);
+      return matchesFilter && matchesQuery;
+    });
+
+    grid.innerHTML = filtered.map(p => {
+      const initials = p.name.split(' ').map(n => n[0]).join('');
+      const alertInsights = p.ai_insights.filter(i => i.type === 'alert');
+      return `
+        <div class="pv-card status-${p.status}" onclick="viewPatient('${p.id}')">
+          <div class="pv-card-header">
+            <div class="pv-card-avatar status-${p.status}">${initials}</div>
+            <div>
+              <div class="pv-card-name">${p.name}</div>
+              <div class="pv-card-meta">${p.age} yrs &middot; ${p.gender} &middot; ${p.blood_group}</div>
+            </div>
+          </div>
+          <div class="pv-card-conditions">
+            ${p.conditions.map(c => `<span class="pv-card-condition">${c}</span>`).join('')}
+          </div>
+          <div class="pv-card-stats">
+            <div class="pv-card-stat">
+              <span class="pv-card-stat-num">${p.visits.length}</span>
+              <span class="pv-card-stat-label">Visits</span>
+            </div>
+            <div class="pv-card-stat">
+              <span class="pv-card-stat-num">${p.last_visit}</span>
+              <span class="pv-card-stat-label">Last Visit</span>
+            </div>
+            <div class="pv-card-stat">
+              <span class="pv-card-stat-num">${p.language_name}</span>
+              <span class="pv-card-stat-label">Language</span>
+            </div>
+          </div>
+          ${alertInsights.length > 0 ? `
+            <div class="pv-card-alert has-alert">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              ${alertInsights[0].title}
+            </div>
+          ` : `
+            <div class="pv-card-alert no-alert">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              ${getStatusLabel(p.status)}
+            </div>
+          `}
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Patient search
+  document.getElementById('pv-search').addEventListener('input', (e) => {
+    renderPatientsList(e.target.value);
+    renderPatientsTable(e.target.value);
+  });
+
+  // Patient filter chips
+  document.querySelectorAll('.pv-filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.pv-filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      pvFilter = chip.dataset.filter;
+      const q = document.getElementById('pv-search').value;
+      renderPatientsList(q);
+      renderPatientsTable(q);
+    });
+  });
+
+  // Patient view toggle (cards / table)
+  document.querySelectorAll('.pv-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.pv-toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      pvViewMode = btn.dataset.mode;
+      const grid = document.getElementById('pv-grid');
+      const tableWrap = document.getElementById('pv-table-wrap');
+      if (pvViewMode === 'table') {
+        grid.style.display = 'none';
+        tableWrap.style.display = 'block';
+        renderPatientsTable(document.getElementById('pv-search').value);
+      } else {
+        grid.style.display = '';
+        tableWrap.style.display = 'none';
+      }
+    });
+  });
+
+  function renderPatientsTable(query = '') {
+    const table = document.getElementById('pv-table');
+    const q = query.toLowerCase();
+
+    const filtered = PATIENTS.filter(p => {
+      const matchesFilter = pvFilter === 'all' || p.status === pvFilter;
+      const matchesQuery = !q ||
+        p.name.toLowerCase().includes(q) ||
+        p.conditions.join(' ').toLowerCase().includes(q) ||
+        p.language_name.toLowerCase().includes(q);
+      return matchesFilter && matchesQuery;
+    });
+
+    const alertIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Age / Gender</th>
+          <th>Conditions</th>
+          <th>Language</th>
+          <th>Visits</th>
+          <th>Last Visit</th>
+          <th>Status</th>
+          <th>AI Summary</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map(p => {
+          const initials = p.name.split(' ').map(n => n[0]).join('');
+          const alerts = p.ai_insights.filter(i => i.type === 'alert');
+          const hasInsights = p.ai_insights.length > 0;
+          return `
+          <tr class="pv-table-row" onclick="viewPatient('${p.id}')">
+            <td>
+              <div class="pv-t-patient">
+                <div class="pv-t-avatar status-${p.status}">${initials}</div>
+                <div>
+                  <div class="pv-t-name">${p.name}</div>
+                  <div class="pv-t-id">${p.id}</div>
+                </div>
+              </div>
+            </td>
+            <td>${p.age} yrs / ${p.gender}</td>
+            <td>
+              <div class="pv-t-conditions">
+                ${p.conditions.map(c => `<span class="pv-t-condition">${c}</span>`).join('')}
+              </div>
+            </td>
+            <td>${p.language_name}</td>
+            <td><span class="pv-t-visits">${p.visits.length}</span></td>
+            <td>${p.last_visit}</td>
+            <td><span class="pv-t-status status-${p.status}">${getStatusLabel(p.status)}</span></td>
+            <td>
+              ${hasInsights ? `
+                <button class="pv-t-ai-btn ${alerts.length > 0 ? 'has-alert' : ''}" onclick="event.stopPropagation(); toggleAiPopover('${p.id}', this)" title="View AI Summary">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.57-3.25 3.92L12 10v2"/><circle cx="12" cy="16" r="1"/><circle cx="12" cy="12" r="10"/></svg>
+                  <span>${p.ai_insights.length}</span>
+                </button>
+              ` : `<span class="pv-t-no-ai">${p.visits.length === 0 ? 'New' : '—'}</span>`}
+            </td>
+            <td>
+              <div class="pv-t-actions">
+                <button class="pv-t-action" onclick="event.stopPropagation(); startDictation('${p.id}', '')" title="Dictate notes">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                </button>
+                <button class="pv-t-action" onclick="event.stopPropagation(); hearSummary('${p.id}')" title="Hear AI Summary">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    `;
+  }
+
+  // AI Summary Popover
+  function toggleAiPopover(patientId, btn) {
+    // Close any existing popover
+    const existing = document.querySelector('.pv-ai-popover');
+    if (existing) { existing.remove(); return; }
+
+    const patient = getPatientById(patientId);
+    if (!patient || patient.ai_insights.length === 0) return;
+
+    const popover = document.createElement('div');
+    popover.className = 'pv-ai-popover';
+    popover.innerHTML = `
+      <div class="pv-ai-pop-header">
+        <span class="pv-ai-pop-badge">AI INSIGHTS</span>
+        <span class="pv-ai-pop-name">${patient.name}</span>
+        <button class="pv-ai-pop-close" onclick="this.closest('.pv-ai-popover').remove()">&times;</button>
+      </div>
+      ${patient.ai_insights.map(i => `
+        <div class="pv-ai-pop-item type-${i.type}">
+          <div class="pv-ai-pop-icon">${getInsightIcon(i.type)}</div>
+          <div>
+            <div class="pv-ai-pop-title">${i.title}</div>
+            <div class="pv-ai-pop-detail">${i.detail}</div>
+            <div class="pv-ai-pop-rec">${i.recommendation}</div>
+          </div>
+        </div>
+      `).join('')}
+      <div class="pv-ai-pop-footer">
+        <button class="pv-ai-pop-action" onclick="this.closest('.pv-ai-popover').remove(); viewPatient('${patientId}')">View Full History</button>
+        <button class="pv-ai-pop-action gold" onclick="this.closest('.pv-ai-popover').remove(); hearSummary('${patientId}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          Hear Summary
+        </button>
+      </div>
+    `;
+
+    // Position near the button
+    const rect = btn.getBoundingClientRect();
+    popover.style.position = 'fixed';
+    popover.style.top = (rect.bottom + 8) + 'px';
+    popover.style.right = (window.innerWidth - rect.right) + 'px';
+    popover.style.zIndex = '100';
+    document.body.appendChild(popover);
+
+    // Close on outside click
+    setTimeout(() => {
+      document.addEventListener('click', function closePopover(e) {
+        if (!popover.contains(e.target) && e.target !== btn) {
+          popover.remove();
+          document.removeEventListener('click', closePopover);
+        }
+      });
+    }, 10);
+  }
+
+  // ═══════════════════════════════════════════
+  // PATIENT DETAIL
+  // ═══════════════════════════════════════════
+  function viewPatient(patientId) {
+    const patient = getPatientById(patientId);
+    if (!patient) return;
+
+    // Merge dictated records from localStorage
+    mergeDictatedRecords(patient);
+
+    const container = document.getElementById('pd-view-inner');
+    const initials = patient.name.split(' ').map(n => n[0]).join('');
+    const lastVisit = patient.visits[patient.visits.length - 1];
+
+    // Generate AI summary text
+    const summaryText = generateSummaryText(patient);
+
+    container.innerHTML = `
+      <!-- Patient Sidebar -->
+      <div class="pd-sidebar">
+        <button class="pd-back-btn" onclick="goBack()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+          Back
+        </button>
+
+        <div class="pd-avatar status-${patient.status}">${initials}</div>
+        <div class="pd-name">${patient.name} <span class="pd-id">${patient.id}</span></div>
+        <div class="pd-meta">${patient.age} yrs &middot; ${patient.gender} &middot; ${patient.blood_group} &middot; ${patient.language_name}</div>
+
+        <div class="pd-conditions-list">
+          ${patient.conditions.map(c => `<span class="pd-condition-chip">${c}</span>`).join('')}
+        </div>
+
+        <div class="pd-stats-grid">
+          <div class="pd-stat-box">
+            <span class="pd-stat-val">${patient.visits.length}</span>
+            <span class="pd-stat-label">Visits</span>
+          </div>
+          <div class="pd-stat-box">
+            <span class="pd-stat-val">${patient.last_visit}</span>
+            <span class="pd-stat-label">Last Visit</span>
+          </div>
+          ${lastVisit && lastVisit.details.vitals && lastVisit.details.vitals.bp ? `
+          <div class="pd-stat-box">
+            <span class="pd-stat-val" style="color: var(--red-500);">${lastVisit.details.vitals.bp}</span>
+            <span class="pd-stat-label">Last BP</span>
+          </div>
+          ` : ''}
+          <div class="pd-stat-box">
+            <span class="pd-stat-val">${patient.phone || 'N/A'}</span>
+            <span class="pd-stat-label">Phone</span>
+          </div>
+        </div>
+
+        <div class="pd-action-btns">
+          <button class="pd-hear-btn" onclick="hearSummary('${patient.id}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            Hear AI Summary
+          </button>
+          <button class="pd-dictate-btn" onclick="startDictation('${patient.id}', '')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+            Dictate New Note
+          </button>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="pd-timeline">
+        <div class="pd-ai-summary">
+          <div class="pd-ai-summary-header">
+            <span class="pd-ai-summary-badge">AI SUMMARY</span>
+          </div>
+          <div class="pd-ai-summary-text">${summaryText}</div>
+        </div>
+
+        <div class="pd-insights">
+          ${patient.ai_insights.map(insight => `
+            <div class="pd-insight-card">
+              <div class="pd-insight-icon">${getInsightIcon(insight.type)}</div>
+              <div>
+                <div class="pd-insight-title">${insight.title}</div>
+                <div class="pd-insight-detail">${insight.detail}</div>
+                <div class="pd-insight-rec">${insight.recommendation}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="pd-visits-title">Visit History (${patient.visits.length} visits)</div>
+        ${patient.visits.slice().reverse().map(v => {
+          const vitals = v.details.vitals || {};
+          const symptoms = v.details.symptoms ? v.details.symptoms.join(', ') : '';
+          const rx = v.details.prescription ? v.details.prescription.map(p => `${p.medicine} ${p.dosage}`).join(', ') : '';
+          return `
+            <div class="pd-visit-card">
+              <div class="pd-visit-num ${v.tag_type}">${v.visit_number}</div>
+              <div class="pd-visit-body">
+                <div class="pd-visit-top">
+                  <span class="pd-visit-date">${v.date_display}</span>
+                  <span class="pd-visit-tag ${v.tag_type}">${v.tag}</span>
+                  ${v.is_dictated ? '<span class="pd-visit-tag" style="background:#fff8e1;color:#d4a000;">AI Scribe</span>' : ''}
+                </div>
+                <div class="pd-visit-vitals">
+                  ${vitals.bp ? `<span class="pd-visit-vital">${vitals.bp}</span>` : ''}
+                  ${vitals.pulse ? `<span class="pd-visit-vital">${vitals.pulse}</span>` : ''}
+                  ${vitals.weight ? `<span class="pd-visit-vital">${vitals.weight}</span>` : ''}
+                  ${vitals.spo2 ? `<span class="pd-visit-vital">SpO2: ${vitals.spo2}</span>` : ''}
+                </div>
+                <div class="pd-visit-detail">
+                  ${symptoms ? `<strong>Symptoms:</strong> ${symptoms}` : ''}
+                  ${v.details.diagnosis ? `<br><strong>Dx:</strong> ${v.details.diagnosis}` : ''}
+                  ${rx ? `<br><strong>Rx:</strong> ${rx}` : ''}
+                </div>
+                <div class="pd-visit-footer">
+                  <span>${v.doctor}</span>
+                  <span>${v.details.follow_up ? 'Follow-up: ' + v.details.follow_up : ''}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+    document.getElementById('topbar-title').textContent = patient.name;
+    document.getElementById('topbar-subtitle').textContent = patient.conditions.join(', ');
+    switchView('patient-detail', true);
+  }
+
+  function goBack() {
+    if (currentView === 'patient-detail') {
+      // Check if we came from patients list or calendar
+      switchView('patients');
+      renderPatientsList();
+    } else if (currentView === 'dictate') {
+      switchView('calendar');
+    }
+  }
+
+  function mergeDictatedRecords(p) {
+    const records = JSON.parse(localStorage.getItem('meddo_records') || '[]');
+    const patientRecords = records.filter(r => r.patient_id === p.id);
+    patientRecords.forEach(rec => {
+      const alreadyMerged = p.visits.some(v => v.dictated_at === rec.timestamp);
+      if (alreadyMerged) return;
+
+      const notes = rec.notes || {};
+      p.visits.push({
+        visit_number: p.visits.length + 1,
+        date: rec.timestamp ? rec.timestamp.split('T')[0] : new Date().toISOString().split('T')[0],
+        date_display: new Date(rec.timestamp || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+        tag: notes.diagnosis || 'AI Scribe Note',
+        tag_type: notes.urgency === 'high' ? 'urgent' : (notes.urgency === 'medium' ? 'followup' : 'routine'),
+        is_dictated: true,
+        dictated_at: rec.timestamp,
+        details: {
+          symptoms: Array.isArray(notes.symptoms) ? notes.symptoms : (notes.symptoms ? [notes.symptoms] : []),
+          vitals: {},
+          diagnosis: notes.diagnosis || '',
+          prescription: Array.isArray(notes.prescription) ? notes.prescription : [],
+          tests_ordered: Array.isArray(notes.tests_ordered) ? notes.tests_ordered : [],
+          follow_up: notes.follow_up || '',
+          notes: rec.summary_en || ''
+        },
+        doctor: 'Dr. Suresh (AI Scribe)'
+      });
+    });
+  }
+
+  function generateSummaryText(patient) {
+    const visits = patient.visits;
+    if (visits.length === 0) return 'No visits recorded yet.';
+
+    const last = visits[visits.length - 1];
+    const conditions = patient.conditions.join(' and ');
+    let text = `<strong>${patient.name}</strong> has ${visits.length} recorded visit${visits.length > 1 ? 's' : ''} for <strong>${conditions}</strong>. `;
+
+    if (last.details.diagnosis) {
+      text += `Most recent diagnosis: <strong>${last.details.diagnosis}</strong>. `;
+    }
+    if (last.details.follow_up) {
+      text += `Follow-up: ${last.details.follow_up}. `;
+    }
+
+    const dictated = visits.filter(v => v.is_dictated);
+    if (dictated.length > 0) {
+      text += `<br><span style="color: var(--gold); font-weight: 600;">New: ${dictated.length} visit${dictated.length > 1 ? 's' : ''} recorded via AI Scribe.</span>`;
+    }
+
+    return text;
+  }
+
+  // ═══════════════════════════════════════════
+  // HEAR AI SUMMARY (TTS)
+  // ═══════════════════════════════════════════
+  async function hearSummary(patientId) {
+    const patient = getPatientById(patientId);
+    if (!patient) return;
+
+    const btn = document.querySelector('.pd-hear-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<div class="dict-spinner" style="width:16px;height:16px;border-width:2px;"></div> Generating...`;
+    }
+
+    try {
+      const response = await fetch('/api/summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patient_id: patient.id,
+          patient_name: patient.name,
+          language: patient.language,
+          visits: patient.visits,
+          ai_insights: patient.ai_insights
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.audio_base64) {
+        const audio = new Audio('data:audio/wav;base64,' + data.audio_base64);
+        audio.play().catch(() => {});
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> Hear AI Summary`;
+      }
+    } catch (err) {
+      console.error('Summary error:', err);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> Hear AI Summary`;
+      }
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // DICTATION
+  // ═══════════════════════════════════════════
+  let mediaRecorder;
+  let audioChunks = [];
+  let isRecording = false;
+
+  function startDictation(patientId, reason) {
+    dictPatient = getPatientById(patientId);
+    dictAptReason = reason;
+    if (!dictPatient) return;
+
+    closeSidePanel();
+    renderDictateView();
+    document.getElementById('topbar-title').textContent = 'Dictate Notes';
+    document.getElementById('topbar-subtitle').textContent = dictPatient.name;
+    switchView('dictate', true);
+  }
+
+  function renderDictateView() {
+    const container = document.getElementById('dict-view-inner');
+    const initials = dictPatient.name.split(' ').map(n => n[0]).join('');
+
+    container.innerHTML = `
+      <button class="dict-back-btn" onclick="switchView('calendar')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        Back to Calendar
+      </button>
+
+      <div class="dict-pt-bar">
+        <div class="dict-pt-left">
+          <div class="dict-pt-avatar" style="background: var(--blue-50); color: var(--blue-600);">${initials}</div>
+          <div>
+            <div class="dict-pt-name">${dictPatient.name} <span style="color: var(--text-muted); font-weight: 400; font-size: 0.82rem;">${dictPatient.id}</span></div>
+            <div class="dict-pt-meta">${dictPatient.age} yrs &middot; ${dictPatient.gender} &middot; ${dictPatient.language_name} &middot; ${dictPatient.conditions.join(', ')}</div>
+          </div>
+        </div>
+        ${dictAptReason ? `<div class="dict-pt-reason">${dictAptReason}</div>` : ''}
+      </div>
+
+      <div class="dict-workspace-grid">
+        <div class="dict-mic-area">
+          <div class="dict-mic-card">
+            <div class="dict-mic-title">Dictate Clinical Notes</div>
+            <div class="dict-mic-subtitle">Click the mic, speak in any Indian language. Click again to stop.</div>
+            <button class="dict-mic-btn" id="demo-mic-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+              <span id="demo-mic-label">Click to Dictate</span>
+            </button>
+            <div class="dict-rec-indicator" id="demo-rec-indicator">
+              <span class="dict-rec-dot"></span>
+              Recording — Click mic to stop
+            </div>
+          </div>
+
+          <div class="dict-transcript-card">
+            <div class="dict-transcript-header">
+              <h4>Transcript</h4>
+              <span class="dict-lang-badge" id="demo-lang-badge"></span>
+            </div>
+            <div class="dict-transcript-body" id="demo-transcript">
+              <span class="dict-transcript-placeholder">Your dictation will appear here...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dict-output-area">
+          <div class="dict-output-card">
+            <div class="dict-output-header">
+              <h4>Structured Notes</h4>
+              <span class="dict-output-status" id="demo-output-status">Waiting for dictation</span>
+            </div>
+            <div class="dict-output-body" id="demo-structured-output">
+              <div class="dict-output-placeholder">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.25">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                <p>AI-structured notes will appear here after dictation</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="dict-success" id="demo-success">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div>
+              <strong>Record saved!</strong>
+              <p>Visit notes added to ${dictPatient ? dictPatient.name : ''}'s history.</p>
+            </div>
+            <button class="dict-success-action" onclick="viewPatient('${dictPatient ? dictPatient.id : ''}')">View Patient</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Attach mic handler
+    const micBtn = document.getElementById('demo-mic-btn');
+    micBtn.addEventListener('click', () => {
+      if (isRecording) {
+        stopDemoRecording();
+      } else {
+        startDemoRecording();
+      }
+    });
+  }
+
+  async function startDemoRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+      mediaRecorder.start();
+
+      isRecording = true;
+      const micBtn = document.getElementById('demo-mic-btn');
+      const micLabel = document.getElementById('demo-mic-label');
+      const recIndicator = document.getElementById('demo-rec-indicator');
+      const transcript = document.getElementById('demo-transcript');
+      const outputStatus = document.getElementById('demo-output-status');
+      const structuredOutput = document.getElementById('demo-structured-output');
+      const success = document.getElementById('demo-success');
+
+      micBtn.classList.add('recording');
+      micLabel.textContent = 'Click to Stop';
+      recIndicator.classList.add('visible');
+      transcript.innerHTML = '<span class="dict-transcript-placeholder">Listening...</span>';
+      outputStatus.textContent = 'Listening...';
+      structuredOutput.innerHTML = `
+        <div class="dict-listening-state">
+          <div class="dict-sound-wave"><span></span><span></span><span></span><span></span><span></span></div>
+          <p>Listening to dictation...</p>
+        </div>
+      `;
+      success.classList.remove('visible');
+    } catch (err) {
+      console.error('Mic error:', err);
+      alert('Microphone access is required. Please allow microphone permission.');
+    }
+  }
+
+  async function stopDemoRecording() {
+    if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+    isRecording = false;
+
+    const audioBase64 = await new Promise((resolve) => {
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(blob);
+      };
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(t => t.stop());
+    });
+
+    const micBtn = document.getElementById('demo-mic-btn');
+    const micLabel = document.getElementById('demo-mic-label');
+    const recIndicator = document.getElementById('demo-rec-indicator');
+    const outputStatus = document.getElementById('demo-output-status');
+    const structuredOutput = document.getElementById('demo-structured-output');
+
+    micBtn.classList.remove('recording');
+    micLabel.textContent = 'Processing...';
+    micBtn.disabled = true;
+    recIndicator.classList.remove('visible');
+    outputStatus.textContent = 'Processing with Sarvam AI...';
+    structuredOutput.innerHTML = `
+      <div class="dict-processing-state">
+        <div class="dict-spinner"></div>
+        <p>Processing with Sarvam AI...</p>
+      </div>
+    `;
+
+    try {
+      const response = await fetch('/api/dictate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          audio_base64: audioBase64,
+          patient_id: dictPatient ? dictPatient.id : '',
+          patient_name: dictPatient ? dictPatient.name : 'Unknown'
+        })
+      });
+
+      const data = await response.json();
+      const transcript = document.getElementById('demo-transcript');
+      const langBadge = document.getElementById('demo-lang-badge');
+
+      if (data.error) {
+        transcript.textContent = data.error;
+        outputStatus.textContent = 'Error';
+        structuredOutput.innerHTML = `<p style="color: var(--red-500); padding: 20px;">${data.error}</p>`;
+        resetDemoMic();
+        return;
+      }
+
+      // Show language
+      const langNames = {
+        'hi-IN': 'Hindi', 'kn-IN': 'Kannada', 'ta-IN': 'Tamil',
+        'te-IN': 'Telugu', 'ml-IN': 'Malayalam', 'bn-IN': 'Bengali',
+        'mr-IN': 'Marathi', 'gu-IN': 'Gujarati', 'od-IN': 'Odia',
+        'pa-IN': 'Punjabi', 'en-IN': 'English'
+      };
+      langBadge.textContent = langNames[data.detected_language] || data.detected_language;
+      langBadge.classList.add('visible');
+
+      // Show transcript
+      transcript.textContent = data.transcript;
+
+      // Show structured notes
+      outputStatus.textContent = 'Notes structured';
+      renderDemoNotes(data.structured_notes);
+
+      // Play confirmation audio
+      if (data.confirmation_audio) {
+        const audio = new Audio('data:audio/wav;base64,' + data.confirmation_audio);
+        audio.play().catch(() => {});
+      }
+
+      // Save to localStorage
+      const records = JSON.parse(localStorage.getItem('meddo_records') || '[]');
+      records.push({
+        patient_id: dictPatient ? dictPatient.id : '',
+        patient_name: dictPatient ? dictPatient.name : 'Unknown',
+        timestamp: data.timestamp,
+        language: data.detected_language,
+        transcript: data.transcript,
+        notes: data.structured_notes,
+        summary_en: data.summary_en
+      });
+      localStorage.setItem('meddo_records', JSON.stringify(records));
+
+      // Show success
+      document.getElementById('demo-success').classList.add('visible');
+      resetDemoMic();
+
+    } catch (err) {
+      console.error('Error:', err);
+      document.getElementById('demo-transcript').textContent = 'Connection error. Make sure the server is running.';
+      outputStatus.textContent = 'Error';
+      structuredOutput.innerHTML = `<p style="color: var(--red-500); padding: 20px;">Connection error. Please try again.</p>`;
+      resetDemoMic();
+    }
+  }
+
+  function renderDemoNotes(notes) {
+    if (!notes) return;
+    const output = document.getElementById('demo-structured-output');
+    const fields = [
+      { label: 'Symptoms', value: Array.isArray(notes.symptoms) ? notes.symptoms.join(', ') : notes.symptoms },
+      { label: 'Duration', value: notes.duration },
+      { label: 'Examination', value: Array.isArray(notes.examination) ? notes.examination.join(', ') : notes.examination },
+      { label: 'Diagnosis', value: notes.diagnosis },
+      { label: 'Prescription', value: notes.prescription ? notes.prescription.map(p => `${p.medicine} ${p.dosage} ${p.frequency}`).join('; ') : null },
+      { label: 'Tests', value: notes.tests_ordered ? notes.tests_ordered.join(', ') : null },
+      { label: 'Test Results', value: notes.tests_results ? notes.tests_results.join(', ') : null },
+      { label: 'Follow-up', value: notes.follow_up },
+      { label: 'Urgency', value: notes.urgency }
+    ];
+
+    output.innerHTML = '';
+    fields.forEach((field, index) => {
+      if (!field.value) return;
+      setTimeout(() => {
+        const row = document.createElement('div');
+        row.className = 'dict-note-row';
+        row.innerHTML = `
+          <span class="dict-note-label">${field.label}</span>
+          <span class="dict-note-value">${field.value}</span>
+        `;
+        output.appendChild(row);
+      }, index * 150);
+    });
+  }
+
+  function resetDemoMic() {
+    const micBtn = document.getElementById('demo-mic-btn');
+    const micLabel = document.getElementById('demo-mic-label');
+    if (micBtn) {
+      micBtn.disabled = false;
+      micBtn.classList.remove('recording');
+    }
+    if (micLabel) micLabel.textContent = 'Click to Dictate';
+  }
+
+  // ═══════════════════════════════════════════
+  // DARK / LIGHT MODE
+  // ═══════════════════════════════════════════
+  function initTheme() {
+    const saved = localStorage.getItem('meddo_theme') || 'light';
+    applyTheme(saved);
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const label = document.getElementById('theme-label');
+    if (label) label.textContent = theme === 'dark' ? 'Dark Mode' : 'Light Mode';
+    localStorage.setItem('meddo_theme', theme);
+  }
+
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
+
+  initTheme();
+
+  // ═══════════════════════════════════════════
+  // INIT
+  // ═══════════════════════════════════════════
+  renderCalendar();
+  </script>
+</body>
+</html>

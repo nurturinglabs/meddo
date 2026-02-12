@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meddo — Dictate Notes</title>
+  <meta name="description" content="Meddo dictation — speak clinical notes in any Indian language, get structured records instantly.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500&family=Noto+Sans+Tamil:wght@400;500&family=Noto+Sans+Telugu:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body class="dashboard-body">
+
+  <!-- Navbar -->
+  <nav class="navbar dashboard-nav" id="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">&#x1FA7A;</span> Meddo
+      </a>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html">Home</a>
+        <a href="calendar.html">Appointments</a>
+        <a href="admin.html">All Patients</a>
+      </div>
+      <div class="nav-doctor-info">
+        <span class="doctor-avatar">DS</span>
+        <span class="doctor-name">Dr. Suresh</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Dictation Content -->
+  <main class="dashboard-main">
+    <div class="container">
+
+      <!-- Back link -->
+      <a href="calendar.html" class="back-link" id="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        Back to Appointments
+      </a>
+
+      <!-- Patient Info Bar -->
+      <div class="dict-patient-bar" id="dict-patient-bar">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Dictation Area -->
+      <div class="dict-workspace">
+
+        <!-- Left: Mic + Transcript -->
+        <div class="dict-left">
+          <div class="dict-mic-section">
+            <h3 class="dict-section-title">Dictate Clinical Notes</h3>
+            <p class="dict-section-subtitle">Click the mic, speak in any Indian language. Click again to stop.</p>
+
+            <button class="dict-mic-btn" id="dict-mic-btn">
+              <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+              <span class="dict-mic-label" id="dict-mic-label">Click to Dictate</span>
+            </button>
+
+            <div class="dict-recording-indicator" id="dict-recording-indicator">
+              <span class="dict-rec-dot"></span>
+              Recording — Click mic to stop
+            </div>
+          </div>
+
+          <!-- Transcript Panel -->
+          <div class="dict-transcript-panel">
+            <div class="dict-transcript-header">
+              <h4>Transcript</h4>
+              <span class="dict-lang-badge" id="dict-lang-badge"></span>
+            </div>
+            <div class="dict-transcript-body" id="dict-transcript">
+              <span class="dict-placeholder">Your dictation will appear here...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Structured Output -->
+        <div class="dict-right">
+          <div class="dict-output-panel">
+            <div class="dict-output-header">
+              <h4>Structured Notes</h4>
+              <span class="dict-output-badge" id="dict-output-status">Waiting for dictation</span>
+            </div>
+            <div class="dict-output-body" id="dict-structured-output">
+              <div class="dict-output-placeholder">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                <p>AI-structured notes will appear here after dictation</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Confirmation / Success -->
+          <div class="dict-success-banner" id="dict-success-banner" style="display: none;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div>
+              <strong>Record saved!</strong>
+              <p>Visit notes added to <span id="dict-patient-name-link"></span>'s history.</p>
+            </div>
+            <a href="#" class="dict-view-patient-btn" id="dict-view-patient-link">View Patient</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/data.js"></script>
+  <script>
+    // ═══════════════════════════════════════════
+    // GET PATIENT FROM URL
+    // ═══════════════════════════════════════════
+    const params = new URLSearchParams(window.location.search);
+    const patientId = params.get('patient_id');
+    const aptId = params.get('apt_id');
+    const patient = getPatientById(patientId);
+    const appointment = aptId ? getAppointmentById(aptId) : null;
+
+    const patientBar = document.getElementById('dict-patient-bar');
+    const micBtn = document.getElementById('dict-mic-btn');
+    const micLabel = document.getElementById('dict-mic-label');
+    const recIndicator = document.getElementById('dict-recording-indicator');
+    const transcriptEl = document.getElementById('dict-transcript');
+    const langBadge = document.getElementById('dict-lang-badge');
+    const outputStatus = document.getElementById('dict-output-status');
+    const structuredOutput = document.getElementById('dict-structured-output');
+    const successBanner = document.getElementById('dict-success-banner');
+    const viewPatientLink = document.getElementById('dict-view-patient-link');
+    const patientNameLink = document.getElementById('dict-patient-name-link');
+
+    if (!patient) {
+      patientBar.innerHTML = `<p style="color: var(--text-muted);">Patient not found. <a href="calendar.html">Go to Appointments</a></p>`;
+    } else {
+      document.title = `Meddo — Dictate for ${patient.name}`;
+      const initials = patient.name.split(' ').map(n => n[0]).join('');
+
+      patientBar.innerHTML = `
+        <div class="dict-pb-left">
+          <div class="dict-pb-avatar cal-avatar-${patient.status}">${initials}</div>
+          <div class="dict-pb-info">
+            <h2 class="dict-pb-name">${patient.name} <span class="dict-pb-id">${patient.id}</span></h2>
+            <span class="dict-pb-meta">${patient.age} yrs &middot; ${patient.gender} &middot; ${patient.language_name} &middot; ${patient.conditions.join(', ')}</span>
+          </div>
+        </div>
+        ${appointment ? `
+        <div class="dict-pb-right">
+          <span class="dict-pb-reason">${appointment.reason}</span>
+        </div>
+        ` : ''}
+      `;
+
+      viewPatientLink.href = `patient.html?id=${patient.id}`;
+      patientNameLink.textContent = patient.name;
+    }
+
+    // ═══════════════════════════════════════════
+    // DICTATION LOGIC
+    // ═══════════════════════════════════════════
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+
+    micBtn.addEventListener('click', () => {
+      if (isRecording) {
+        stopDictation();
+      } else {
+        startDictation();
+      }
+    });
+
+    async function startDictation() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+        mediaRecorder.start();
+
+        isRecording = true;
+        micBtn.classList.add('recording');
+        micLabel.textContent = 'Click to Stop';
+        recIndicator.classList.add('visible');
+        transcriptEl.innerHTML = '<span class="dict-placeholder">Listening...</span>';
+        outputStatus.textContent = 'Listening...';
+        structuredOutput.innerHTML = `
+          <div class="dict-listening-state">
+            <div class="dict-sound-wave">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <p>Listening to dictation...</p>
+          </div>
+        `;
+        successBanner.style.display = 'none';
+      } catch (err) {
+        console.error('Mic error:', err);
+        alert('Microphone access is required. Please allow microphone permission.');
+      }
+    }
+
+    async function stopDictation() {
+      if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+      isRecording = false;
+
+      const audioBase64 = await new Promise((resolve) => {
+        mediaRecorder.onstop = async () => {
+          const blob = new Blob(audioChunks, { type: 'audio/webm' });
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(blob);
+        };
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(t => t.stop());
+      });
+
+      micBtn.classList.remove('recording');
+      micLabel.textContent = 'Processing...';
+      micBtn.disabled = true;
+      recIndicator.classList.remove('visible');
+      outputStatus.textContent = 'Processing with Sarvam AI...';
+      structuredOutput.innerHTML = `
+        <div class="dict-processing-state">
+          <div class="dict-spinner"></div>
+          <p>Processing with Sarvam AI...</p>
+        </div>
+      `;
+
+      try {
+        const response = await fetch('/api/dictate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            audio_base64: audioBase64,
+            patient_id: patientId,
+            patient_name: patient ? patient.name : 'Unknown'
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          transcriptEl.textContent = data.error;
+          outputStatus.textContent = 'Error';
+          structuredOutput.innerHTML = `<p style="color: var(--red-500); padding: 20px;">${data.error}</p>`;
+          resetMic();
+          return;
+        }
+
+        // Show language
+        const langNames = {
+          'hi-IN': 'Hindi', 'kn-IN': 'Kannada', 'ta-IN': 'Tamil',
+          'te-IN': 'Telugu', 'ml-IN': 'Malayalam', 'bn-IN': 'Bengali',
+          'mr-IN': 'Marathi', 'gu-IN': 'Gujarati', 'od-IN': 'Odia',
+          'pa-IN': 'Punjabi', 'en-IN': 'English'
+        };
+        langBadge.textContent = langNames[data.detected_language] || data.detected_language;
+        langBadge.classList.add('visible');
+
+        // Show transcript
+        transcriptEl.textContent = data.transcript;
+
+        // Show structured notes
+        outputStatus.textContent = 'Notes structured';
+        renderNotes(data.structured_notes);
+
+        // Play confirmation audio
+        if (data.confirmation_audio) {
+          const audio = new Audio('data:audio/wav;base64,' + data.confirmation_audio);
+          audio.play().catch(() => {});
+        }
+
+        // Save to localStorage
+        const records = JSON.parse(localStorage.getItem('meddo_records') || '[]');
+        records.push({
+          patient_id: patientId,
+          patient_name: patient ? patient.name : 'Unknown',
+          timestamp: data.timestamp,
+          language: data.detected_language,
+          transcript: data.transcript,
+          notes: data.structured_notes,
+          summary_en: data.summary_en
+        });
+        localStorage.setItem('meddo_records', JSON.stringify(records));
+
+        // Show success
+        successBanner.style.display = 'flex';
+
+        resetMic();
+
+      } catch (err) {
+        console.error('Error:', err);
+        transcriptEl.textContent = 'Connection error. Make sure the server is running.';
+        outputStatus.textContent = 'Error';
+        structuredOutput.innerHTML = `<p style="color: var(--red-500); padding: 20px;">Connection error. Please try again.</p>`;
+        resetMic();
+      }
+    }
+
+    function renderNotes(notes) {
+      if (!notes) return;
+
+      const fields = [
+        { label: 'Symptoms', value: Array.isArray(notes.symptoms) ? notes.symptoms.join(', ') : notes.symptoms },
+        { label: 'Duration', value: notes.duration },
+        { label: 'Examination', value: Array.isArray(notes.examination) ? notes.examination.join(', ') : notes.examination },
+        { label: 'Diagnosis', value: notes.diagnosis },
+        { label: 'Prescription', value: notes.prescription ? notes.prescription.map(p => `${p.medicine} ${p.dosage} ${p.frequency}`).join('; ') : null },
+        { label: 'Tests', value: notes.tests_ordered ? notes.tests_ordered.join(', ') : null },
+        { label: 'Test Results', value: notes.tests_results ? notes.tests_results.join(', ') : null },
+        { label: 'Follow-up', value: notes.follow_up },
+        { label: 'Urgency', value: notes.urgency }
+      ];
+
+      structuredOutput.innerHTML = '';
+
+      fields.forEach((field, index) => {
+        if (!field.value) return;
+        setTimeout(() => {
+          const row = document.createElement('div');
+          row.className = 'dict-note-row';
+          row.innerHTML = `
+            <span class="dict-note-label">${field.label}</span>
+            <span class="dict-note-value">${field.value}</span>
+          `;
+          structuredOutput.appendChild(row);
+        }, index * 150);
+      });
+    }
+
+    function resetMic() {
+      micBtn.disabled = false;
+      micLabel.textContent = 'Click to Dictate';
+      micBtn.classList.remove('recording');
+    }
+  </script>
+</body>
+</html>

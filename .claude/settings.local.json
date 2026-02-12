@@ -9,7 +9,8 @@
       "Bash(xargs kill:*)",
       "Bash(npx vercel dev:*)",
       "Bash(python3 -m http.server:*)",
-      "Bash(node server.js:*)"
+      "Bash(node server.js:*)",
+      "Bash(kill:*)"
     ]
   }
 }
