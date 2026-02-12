@@ -18,6 +18,8 @@ if (fs.existsSync(envPath)) {
 // Import API handlers
 const dictateHandler = require('./api/dictate');
 const summarizeHandler = require('./api/summarize');
+const appointmentAgentHandler = require('./api/appointment-agent');
+const sendNotificationHandler = require('./api/send-notification');
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -50,6 +52,12 @@ const server = http.createServer(async (req, res) => {
   }
   if (req.url === '/api/summarize' && req.method === 'POST') {
     return handleAPI(req, res, summarizeHandler);
+  }
+  if (req.url === '/api/appointment-agent' && req.method === 'POST') {
+    return handleAPI(req, res, appointmentAgentHandler);
+  }
+  if (req.url === '/api/send-notification' && req.method === 'POST') {
+    return handleAPI(req, res, sendNotificationHandler);
   }
 
   // Static files — strip query string

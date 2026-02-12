@@ -1249,3 +1249,73 @@ function getInsightIcon(type) {
   };
   return icons[type] || icons.pattern;
 }
+
+// ═══════════════════════════════════════════
+// ANALYTICS DATA
+// ═══════════════════════════════════════════
+function generateAnalyticsData() {
+  const today = new Date();
+
+  // Generate 30 days of historical appointment counts
+  const dailyData = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dayOfWeek = d.getDay();
+    const count = dayOfWeek === 0 ? 0 : Math.floor(Math.random() * 6) + 4;
+    const urgent = Math.floor(count * 0.2);
+    const followup = Math.floor(count * 0.4);
+    dailyData.push({
+      date: d.toISOString().split('T')[0],
+      dateDisplay: d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }),
+      dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
+      count,
+      urgent,
+      followup,
+      routine: count - urgent - followup
+    });
+  }
+
+  // Language distribution from PATIENTS
+  const langCounts = {};
+  PATIENTS.forEach(p => {
+    langCounts[p.language_name] = (langCounts[p.language_name] || 0) + 1;
+  });
+
+  // Time slot distribution from APPOINTMENTS
+  const slotCounts = {};
+  APPOINTMENTS.forEach(a => {
+    const hour = parseInt(a.time.split(':')[0]);
+    const label = hour >= 12 ? (hour > 12 ? (hour - 12) + ' PM' : '12 PM') : hour + ' AM';
+    slotCounts[label] = (slotCounts[label] || 0) + 1;
+  });
+
+  // Type breakdown from APPOINTMENTS
+  const typeCounts = { urgent: 0, followup: 0, routine: 0 };
+  APPOINTMENTS.forEach(a => { typeCounts[a.type] = (typeCounts[a.type] || 0) + 1; });
+
+  // Summary stats
+  const totalAppointments = dailyData.reduce((sum, d) => sum + d.count, 0);
+  const todayCount = dailyData[dailyData.length - 1]?.count || 0;
+  const uniqueLanguages = Object.keys(langCounts).length;
+  const peakHour = Object.entries(slotCounts).sort((a, b) => b[1] - a[1])[0];
+
+  // Voice bookings (simulated)
+  const voiceBookings = Math.floor(totalAppointments * 0.35);
+
+  return {
+    dailyData,
+    languageDistribution: langCounts,
+    timeSlotDistribution: slotCounts,
+    typeBreakdown: typeCounts,
+    summary: {
+      totalAppointments,
+      todayCount,
+      uniqueLanguages,
+      peakHour: peakHour ? peakHour[0] : 'N/A',
+      voiceBookings
+    }
+  };
+}
+
+const ANALYTICS_DATA = generateAnalyticsData();

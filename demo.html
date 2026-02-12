@@ -38,6 +38,14 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Patients
       </button>
+      <button class="sidebar-nav-item" data-view="book-appointment">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        Book Appointment
+      </button>
+      <button class="sidebar-nav-item" data-view="analytics">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        Analytics
+      </button>
 
       <div class="sidebar-nav-divider"></div>
 
@@ -180,6 +188,33 @@
         </div>
       </div>
 
+      <!-- ═══════════════════════════════════ -->
+      <!-- BOOK APPOINTMENT VIEW               -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="view" id="view-book-appointment">
+        <div class="ba-view-inner" id="ba-view-inner">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- ANALYTICS VIEW                      -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="view" id="view-analytics">
+        <div class="analytics-view-inner" id="analytics-view-inner">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════════════════════════ -->
+    <!-- FOLLOW-UP MODAL OVERLAY             -->
+    <!-- ═══════════════════════════════════ -->
+    <div class="fu-overlay" id="fu-overlay">
+      <div class="fu-modal" id="fu-modal">
+        <!-- Populated by JS -->
+      </div>
     </div>
   </div>
 
@@ -235,6 +270,16 @@
       topSub.textContent = '';
       topCenter.style.display = 'none';
       topRight.style.display = 'none';
+    } else if (viewName === 'book-appointment') {
+      topTitle.textContent = 'Book Appointment';
+      topSub.textContent = 'Voice-powered booking assistant';
+      topCenter.style.display = 'none';
+      topRight.style.display = 'none';
+    } else if (viewName === 'analytics') {
+      topTitle.textContent = 'Analytics';
+      topSub.textContent = 'Appointment insights & trends';
+      topCenter.style.display = 'none';
+      topRight.style.display = 'none';
     }
   }
 
@@ -246,6 +291,10 @@
         if (view === 'patients') {
           renderPatientsList();
           renderPatientsTable();
+        } else if (view === 'analytics') {
+          renderAnalytics();
+        } else if (view === 'book-appointment') {
+          if (!baInitialized) initBookingAgent();
         }
       }
     });
@@ -806,6 +855,10 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
             Dictate New Note
           </button>
+          <button class="pd-followup-btn" onclick="openFollowUpPanel('${patient.id}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4z"/></svg>
+            Send Follow-up
+          </button>
         </div>
       </div>
 
@@ -949,22 +1002,19 @@
     }
 
     try {
-      const response = await fetch('/api/summary', {
+      const response = await fetch('/api/summarize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          patient_id: patient.id,
-          patient_name: patient.name,
-          language: patient.language,
-          visits: patient.visits,
-          ai_insights: patient.ai_insights
+          patient_history: patient.visits,
+          doctor_language: patient.language
         })
       });
 
       const data = await response.json();
 
-      if (data.audio_base64) {
-        const audio = new Audio('data:audio/wav;base64,' + data.audio_base64);
+      if (data.audio) {
+        const audio = new Audio('data:audio/wav;base64,' + data.audio);
         audio.play().catch(() => {});
       }
 
@@ -1272,6 +1322,727 @@
       micBtn.classList.remove('recording');
     }
     if (micLabel) micLabel.textContent = 'Click to Dictate';
+  }
+
+  // ═══════════════════════════════════════════
+  // ANALYTICS DASHBOARD
+  // ═══════════════════════════════════════════
+  let analyticsTimePeriod = 'weekly';
+
+  function renderAnalytics() {
+    const container = document.getElementById('analytics-view-inner');
+    const data = ANALYTICS_DATA;
+
+    // Get the relevant daily slice based on period
+    let periodDays, chartData, periodLabel;
+    if (analyticsTimePeriod === 'daily') {
+      periodDays = data.dailyData.slice(-7);
+      chartData = periodDays;
+      periodLabel = 'Last 7 Days';
+    } else if (analyticsTimePeriod === 'weekly') {
+      periodDays = data.dailyData.slice(-7);
+      chartData = [];
+      for (let w = 0; w < 4; w++) {
+        const weekSlice = data.dailyData.slice(w * 7, (w + 1) * 7);
+        if (weekSlice.length === 0) continue;
+        const count = weekSlice.reduce((s, d) => s + d.count, 0);
+        const urgent = weekSlice.reduce((s, d) => s + d.urgent, 0);
+        const followup = weekSlice.reduce((s, d) => s + d.followup, 0);
+        chartData.push({
+          dateDisplay: 'Week ' + (w + 1),
+          count, urgent, followup,
+          routine: count - urgent - followup
+        });
+      }
+      periodDays = data.dailyData.slice(-7);
+      periodLabel = 'This Week';
+    } else {
+      periodDays = data.dailyData;
+      chartData = data.dailyData;
+      periodLabel = 'Last 30 Days';
+    }
+
+    // Compute period-aware summary stats
+    const periodTotal = periodDays.reduce((s, d) => s + d.count, 0);
+    const periodUrgent = periodDays.reduce((s, d) => s + d.urgent, 0);
+    const periodFollowup = periodDays.reduce((s, d) => s + d.followup, 0);
+    const periodRoutine = periodDays.reduce((s, d) => s + d.routine, 0);
+    const periodVoice = Math.floor(periodTotal * 0.35);
+    const avgPerDay = periodDays.filter(d => d.count > 0).length > 0
+      ? Math.round(periodTotal / periodDays.filter(d => d.count > 0).length)
+      : 0;
+
+    const maxCount = Math.max(...chartData.map(d => d.count), 1);
+
+    // Sort time slots by hour
+    const sortedSlots = Object.entries(data.timeSlotDistribution).sort((a, b) => {
+      const hourA = parseInt(a[0]);
+      const hourB = parseInt(b[0]);
+      return hourA - hourB;
+    });
+    const maxSlotCount = Math.max(...sortedSlots.map(s => s[1]), 1);
+
+    // Sort languages by count
+    const sortedLangs = Object.entries(data.languageDistribution).sort((a, b) => b[1] - a[1]);
+    const maxLangCount = Math.max(...sortedLangs.map(l => l[1]), 1);
+
+    container.innerHTML = `
+      <div class="an-inner">
+        <!-- Dashboard Header with Period Toggle -->
+        <div class="an-dashboard-header">
+          <div class="an-dashboard-title">
+            <span class="an-period-label">${periodLabel}</span>
+          </div>
+          <div class="an-period-toggle">
+            <button class="an-period-btn ${analyticsTimePeriod === 'daily' ? 'active' : ''}" onclick="setAnalyticsPeriod('daily')">Daily</button>
+            <button class="an-period-btn ${analyticsTimePeriod === 'weekly' ? 'active' : ''}" onclick="setAnalyticsPeriod('weekly')">Weekly</button>
+            <button class="an-period-btn ${analyticsTimePeriod === 'monthly' ? 'active' : ''}" onclick="setAnalyticsPeriod('monthly')">Monthly</button>
+          </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="an-summary-row">
+          <div class="an-summary-card">
+            <div class="an-summary-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue-600)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="an-summary-val">${periodTotal}</div>
+            <div class="an-summary-label">Appointments</div>
+          </div>
+          <div class="an-summary-card">
+            <div class="an-summary-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <div class="an-summary-val">${avgPerDay}</div>
+            <div class="an-summary-label">Avg / Day</div>
+          </div>
+          <div class="an-summary-card">
+            <div class="an-summary-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green-500)" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+            </div>
+            <div class="an-summary-val">${periodVoice}</div>
+            <div class="an-summary-label">Voice Bookings</div>
+          </div>
+          <div class="an-summary-card">
+            <div class="an-summary-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue-600)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <div class="an-summary-val">${data.summary.uniqueLanguages}</div>
+            <div class="an-summary-label">Languages</div>
+          </div>
+        </div>
+
+        <!-- Appointment Volume Chart -->
+        <div class="an-section">
+          <div class="an-section-header">
+            <h3 class="an-section-title">Appointment Volume</h3>
+            <div class="an-chart-legend">
+              <span class="an-legend-item"><span class="an-legend-dot urgent"></span> Urgent</span>
+              <span class="an-legend-item"><span class="an-legend-dot followup"></span> Follow-up</span>
+              <span class="an-legend-item"><span class="an-legend-dot routine"></span> Routine</span>
+            </div>
+          </div>
+          <div class="an-chart-scroll ${analyticsTimePeriod === 'monthly' ? 'scrollable' : ''}">
+            <div class="an-chart ${analyticsTimePeriod === 'monthly' ? 'an-chart-monthly' : ''}">
+              ${chartData.map(d => `
+                <div class="an-bar-col">
+                  <div class="an-bar-count">${d.count}</div>
+                  <div class="an-bar-stack" style="height: ${(d.count / maxCount) * 100}%">
+                    ${d.urgent > 0 ? `<div class="an-bar-segment urgent" style="flex: ${d.urgent}"></div>` : ''}
+                    ${d.followup > 0 ? `<div class="an-bar-segment followup" style="flex: ${d.followup}"></div>` : ''}
+                    ${d.routine > 0 ? `<div class="an-bar-segment routine" style="flex: ${d.routine}"></div>` : ''}
+                  </div>
+                  <div class="an-bar-label">${d.dateDisplay}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Breakdown Row -->
+        <div class="an-breakdown-row">
+          <!-- Language Distribution -->
+          <div class="an-breakdown-card">
+            <h4 class="an-breakdown-title">By Language</h4>
+            ${sortedLangs.map(([lang, count]) => {
+              const pct = Math.round((count / maxLangCount) * 100);
+              return `<div class="an-hbar-row">
+                <span class="an-hbar-label">${lang}</span>
+                <div class="an-hbar-track"><div class="an-hbar-fill" style="width:${pct}%"></div></div>
+                <span class="an-hbar-val">${count}</span>
+              </div>`;
+            }).join('')}
+          </div>
+
+          <!-- Time Slot Distribution (Histogram) -->
+          <div class="an-breakdown-card">
+            <h4 class="an-breakdown-title">By Time Slot</h4>
+            <div class="an-histogram">
+              ${sortedSlots.map(([slot, count]) => {
+                const pct = Math.round((count / maxSlotCount) * 100);
+                return `<div class="an-hist-col">
+                  <div class="an-hist-count">${count}</div>
+                  <div class="an-hist-bar" style="height: ${pct}%"></div>
+                  <div class="an-hist-label">${slot}</div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- Type Breakdown -->
+          <div class="an-breakdown-card">
+            <h4 class="an-breakdown-title">By Type</h4>
+            <div class="an-type-cards">
+              <div class="an-type-card urgent">
+                <span class="an-type-count">${periodUrgent}</span>
+                <span class="an-type-label">Urgent</span>
+              </div>
+              <div class="an-type-card followup">
+                <span class="an-type-count">${periodFollowup}</span>
+                <span class="an-type-label">Follow-up</span>
+              </div>
+              <div class="an-type-card routine">
+                <span class="an-type-count">${periodRoutine}</span>
+                <span class="an-type-label">Routine</span>
+              </div>
+            </div>
+            <div class="an-type-bar">
+              <div class="an-type-bar-seg urgent" style="width:${periodTotal ? (periodUrgent / periodTotal) * 100 : 0}%"></div>
+              <div class="an-type-bar-seg followup" style="width:${periodTotal ? (periodFollowup / periodTotal) * 100 : 0}%"></div>
+              <div class="an-type-bar-seg routine" style="width:${periodTotal ? (periodRoutine / periodTotal) * 100 : 0}%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function setAnalyticsPeriod(period) {
+    analyticsTimePeriod = period;
+    renderAnalytics();
+  }
+
+  // ═══════════════════════════════════════════
+  // SEND FOLLOW-UP
+  // ═══════════════════════════════════════════
+  let fuPatient = null;
+  let fuMediaRecorder = null;
+  let fuAudioChunks = [];
+  let fuIsRecording = false;
+
+  function openFollowUpPanel(patientId) {
+    fuPatient = getPatientById(patientId);
+    if (!fuPatient) return;
+
+    const overlay = document.getElementById('fu-overlay');
+    const modal = document.getElementById('fu-modal');
+    const suggestions = generateFollowUpSuggestions(fuPatient);
+
+    const langOptions = [
+      { code: 'hi-IN', name: 'Hindi' },
+      { code: 'kn-IN', name: 'Kannada' },
+      { code: 'ta-IN', name: 'Tamil' },
+      { code: 'te-IN', name: 'Telugu' },
+      { code: 'ml-IN', name: 'Malayalam' },
+      { code: 'mr-IN', name: 'Marathi' },
+      { code: 'bn-IN', name: 'Bengali' },
+      { code: 'en-IN', name: 'English' }
+    ];
+
+    modal.innerHTML = `
+      <div class="fu-header">
+        <h3>Send Follow-up</h3>
+        <button class="fu-close" onclick="closeFollowUp()">&times;</button>
+      </div>
+      <div class="fu-patient-info">
+        <strong>${fuPatient.name}</strong>
+        <span>${fuPatient.language_name} &middot; ${fuPatient.conditions.join(', ')}</span>
+      </div>
+      <div class="fu-suggestions">
+        <div class="fu-suggestions-label">Suggested messages:</div>
+        <div class="fu-suggestion-list">
+          ${suggestions.map((s, i) => `
+            <button class="fu-suggestion-btn" onclick="selectFollowUpSuggestion(${i})">${s}</button>
+          `).join('')}
+        </div>
+      </div>
+      <div class="fu-compose">
+        <textarea class="fu-textarea" id="fu-message" rows="3" placeholder="Type a custom message or select above..."></textarea>
+        <div class="fu-compose-actions">
+          <button class="fu-mic-btn" id="fu-mic-btn" onclick="toggleFollowUpRecording()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+            <span id="fu-mic-label">Dictate</span>
+          </button>
+          <select class="fu-lang-select" id="fu-lang">
+            ${langOptions.map(l => `<option value="${l.code}" ${fuPatient.language === l.code ? 'selected' : ''}>${l.name}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="fu-footer">
+        <button class="fu-send-btn" id="fu-send-btn" onclick="sendFollowUp()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4z"/></svg>
+          Send Follow-up
+        </button>
+      </div>
+      <div class="fu-success" id="fu-success">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Follow-up sent to ${fuPatient.name}!
+      </div>
+    `;
+
+    overlay.classList.add('active');
+  }
+
+  function closeFollowUp() {
+    document.getElementById('fu-overlay').classList.remove('active');
+    fuPatient = null;
+  }
+
+  function generateFollowUpSuggestions(patient) {
+    const suggestions = [];
+    const lastVisit = patient.visits[patient.visits.length - 1];
+    if (lastVisit) {
+      if (lastVisit.details.follow_up && lastVisit.details.follow_up !== 'N/A') {
+        suggestions.push('Time for your follow-up visit (' + lastVisit.details.follow_up + ')');
+      }
+      if (lastVisit.details.tests_ordered && lastVisit.details.tests_ordered.length > 0) {
+        suggestions.push('Please get your ' + lastVisit.details.tests_ordered[0] + ' done before your next visit');
+      }
+    }
+    patient.ai_insights.filter(i => i.type === 'alert').forEach(a => {
+      if (a.recommendation) suggestions.push(a.recommendation);
+    });
+    if (suggestions.length === 0) {
+      suggestions.push('Hope you are feeling better. Please visit for your routine check-up.');
+    }
+    return suggestions.slice(0, 3);
+  }
+
+  function selectFollowUpSuggestion(index) {
+    const suggestions = generateFollowUpSuggestions(fuPatient);
+    document.getElementById('fu-message').value = suggestions[index] || '';
+  }
+
+  async function toggleFollowUpRecording() {
+    if (fuIsRecording) {
+      stopFollowUpRecording();
+    } else {
+      startFollowUpRecording();
+    }
+  }
+
+  async function startFollowUpRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      fuMediaRecorder = new MediaRecorder(stream);
+      fuAudioChunks = [];
+      fuMediaRecorder.ondataavailable = (e) => fuAudioChunks.push(e.data);
+      fuMediaRecorder.start();
+      fuIsRecording = true;
+      document.getElementById('fu-mic-btn').classList.add('recording');
+      document.getElementById('fu-mic-label').textContent = 'Stop';
+    } catch (err) {
+      alert('Microphone access required.');
+    }
+  }
+
+  async function stopFollowUpRecording() {
+    if (!fuMediaRecorder) return;
+    fuIsRecording = false;
+
+    const audioBase64 = await new Promise((resolve) => {
+      fuMediaRecorder.onstop = async () => {
+        const blob = new Blob(fuAudioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(blob);
+      };
+      fuMediaRecorder.stop();
+      fuMediaRecorder.stream.getTracks().forEach(t => t.stop());
+    });
+
+    document.getElementById('fu-mic-btn').classList.remove('recording');
+    document.getElementById('fu-mic-label').textContent = 'Dictate';
+    document.getElementById('fu-message').value = 'Transcribing...';
+
+    try {
+      const resp = await fetch('/api/send-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patient_id: fuPatient.id,
+          audio_base64: audioBase64,
+          language: document.getElementById('fu-lang').value
+        })
+      });
+      const data = await resp.json();
+      document.getElementById('fu-message').value = data.transcript || '';
+    } catch (e) {
+      document.getElementById('fu-message').value = '';
+    }
+  }
+
+  async function sendFollowUp() {
+    const message = document.getElementById('fu-message').value.trim();
+    if (!message) { alert('Please enter a message.'); return; }
+
+    const sendBtn = document.getElementById('fu-send-btn');
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<div class="dict-spinner" style="width:14px;height:14px;border-width:2px;"></div> Sending...';
+
+    try {
+      const resp = await fetch('/api/send-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patient_id: fuPatient.id,
+          message,
+          language: document.getElementById('fu-lang').value
+        })
+      });
+      const data = await resp.json();
+
+      if (data.audio) {
+        const audio = new Audio('data:audio/wav;base64,' + data.audio);
+        audio.play().catch(() => {});
+      }
+
+      // Store notification
+      const notifications = JSON.parse(localStorage.getItem('meddo_notifications') || '[]');
+      notifications.push({
+        patient_id: fuPatient.id,
+        patient_name: fuPatient.name,
+        message: data.translated_message || message,
+        language: document.getElementById('fu-lang').value,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('meddo_notifications', JSON.stringify(notifications));
+
+      document.getElementById('fu-success').classList.add('visible');
+      setTimeout(() => closeFollowUp(), 2000);
+    } catch (e) {
+      alert('Error sending follow-up. Please try again.');
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4z"/></svg> Send Follow-up';
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // VOICE APPOINTMENT BOOKING (Conversational Agent)
+  // ═══════════════════════════════════════════
+  let baInitialized = false;
+  let baConversation = [];
+  let baDetectedLanguage = 'hi-IN';
+  let baBookingState = 'greeting';
+  let baMediaRecorder = null;
+  let baAudioChunks = [];
+  let baIsRecording = false;
+  let baAppointmentDetails = {};
+  let baCurrentAudio = null;
+
+  function initBookingAgent() {
+    baInitialized = true;
+    baConversation = [];
+    baBookingState = 'greeting';
+    baAppointmentDetails = {};
+
+    const container = document.getElementById('ba-view-inner');
+    container.innerHTML = `
+      <div class="ba-layout">
+        <div class="ba-chat-area">
+          <div class="ba-chat-header">
+            <div class="ba-agent-info">
+              <div class="ba-agent-avatar">DS</div>
+              <div>
+                <div class="ba-agent-name">Dr. Suresh's Clinic</div>
+                <div class="ba-agent-status"><span class="ba-online-dot"></span> AI Assistant &middot; Online</div>
+              </div>
+            </div>
+            <button class="ba-reset-btn" onclick="resetBookingAgent()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              New
+            </button>
+          </div>
+
+          <div class="ba-messages" id="ba-messages"></div>
+
+          <div class="ba-input-area">
+            <div class="ba-rec-indicator" id="ba-rec-indicator">
+              <span class="ba-rec-dot"></span> Listening...
+            </div>
+            <button class="ba-mic-btn" id="ba-mic-btn" onclick="toggleBookingRecording()">
+              <svg class="ba-mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+            </button>
+            <span class="ba-mic-hint" id="ba-mic-hint">Tap the mic and speak in any language</span>
+          </div>
+        </div>
+
+        <div class="ba-summary-panel" id="ba-summary-panel">
+          <h4 class="ba-panel-title">Booking Details</h4>
+          <div class="ba-detail-rows" id="ba-detail-rows">
+            <div class="ba-detail-row">
+              <span class="ba-detail-label">Name</span>
+              <span class="ba-detail-val" id="ba-d-name">--</span>
+            </div>
+            <div class="ba-detail-row">
+              <span class="ba-detail-label">Reason</span>
+              <span class="ba-detail-val" id="ba-d-reason">--</span>
+            </div>
+            <div class="ba-detail-row">
+              <span class="ba-detail-label">Date</span>
+              <span class="ba-detail-val" id="ba-d-date">--</span>
+            </div>
+            <div class="ba-detail-row">
+              <span class="ba-detail-label">Time</span>
+              <span class="ba-detail-val" id="ba-d-time">--</span>
+            </div>
+            <div class="ba-detail-row">
+              <span class="ba-detail-label">Language</span>
+              <span class="ba-detail-val" id="ba-d-lang">--</span>
+            </div>
+          </div>
+          <div class="ba-confirmed" id="ba-confirmed">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Appointment Confirmed!
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Send greeting
+    addAgentBubble("Welcome to Dr. Suresh's clinic! How can I help you today? Please tap the mic and speak in any language.");
+    baConversation.push({ role: 'assistant', content: "Welcome to Dr. Suresh's clinic! How can I help you today?" });
+  }
+
+  function resetBookingAgent() {
+    baInitialized = false;
+    initBookingAgent();
+  }
+
+  function addAgentBubble(text) {
+    const msgs = document.getElementById('ba-messages');
+    const bubble = document.createElement('div');
+    bubble.className = 'ba-bubble ba-agent';
+    bubble.innerHTML = `
+      <div class="ba-bubble-avatar">DS</div>
+      <div class="ba-bubble-wrap">
+        <div class="ba-bubble-content">${text}</div>
+        <div class="ba-bubble-time">${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
+      </div>
+    `;
+    msgs.appendChild(bubble);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function addPatientBubble(text) {
+    const msgs = document.getElementById('ba-messages');
+    const bubble = document.createElement('div');
+    bubble.className = 'ba-bubble ba-patient';
+    bubble.innerHTML = `
+      <div class="ba-bubble-wrap">
+        <div class="ba-bubble-content">${text}</div>
+        <div class="ba-bubble-time">${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
+      </div>
+    `;
+    msgs.appendChild(bubble);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function addTypingIndicator() {
+    const msgs = document.getElementById('ba-messages');
+    const indicator = document.createElement('div');
+    indicator.className = 'ba-bubble ba-agent ba-typing';
+    indicator.id = 'ba-typing';
+    indicator.innerHTML = `
+      <div class="ba-bubble-avatar">DS</div>
+      <div class="ba-bubble-wrap">
+        <div class="ba-typing-dots"><span></span><span></span><span></span></div>
+      </div>
+    `;
+    msgs.appendChild(indicator);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function removeTypingIndicator() {
+    const el = document.getElementById('ba-typing');
+    if (el) el.remove();
+  }
+
+  async function toggleBookingRecording() {
+    if (baIsRecording) {
+      stopBookingRecording();
+    } else {
+      startBookingRecording();
+    }
+  }
+
+  async function startBookingRecording() {
+    // Stop any playing audio
+    if (baCurrentAudio) {
+      baCurrentAudio.pause();
+      baCurrentAudio = null;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      baMediaRecorder = new MediaRecorder(stream);
+      baAudioChunks = [];
+      baMediaRecorder.ondataavailable = (e) => baAudioChunks.push(e.data);
+      baMediaRecorder.start();
+      baIsRecording = true;
+      document.getElementById('ba-mic-btn').classList.add('recording');
+      document.getElementById('ba-rec-indicator').classList.add('visible');
+      document.getElementById('ba-mic-hint').textContent = 'Tap to stop recording';
+    } catch (err) {
+      alert('Microphone access required for voice booking.');
+    }
+  }
+
+  async function stopBookingRecording() {
+    if (!baMediaRecorder) return;
+    baIsRecording = false;
+
+    const audioBase64 = await new Promise((resolve) => {
+      baMediaRecorder.onstop = async () => {
+        const blob = new Blob(baAudioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(blob);
+      };
+      baMediaRecorder.stop();
+      baMediaRecorder.stream.getTracks().forEach(t => t.stop());
+    });
+
+    document.getElementById('ba-mic-btn').classList.remove('recording');
+    document.getElementById('ba-rec-indicator').classList.remove('visible');
+    document.getElementById('ba-mic-btn').disabled = true;
+    document.getElementById('ba-mic-hint').textContent = 'Processing...';
+
+    addTypingIndicator();
+
+    try {
+      const resp = await fetch('/api/appointment-agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          audio_base64: audioBase64,
+          conversation_history: baConversation,
+          detected_language: baDetectedLanguage
+        })
+      });
+
+      const data = await resp.json();
+      removeTypingIndicator();
+
+      if (data.error) {
+        addAgentBubble("Sorry, I couldn't hear that clearly. Could you please try again?");
+        document.getElementById('ba-mic-btn').disabled = false;
+        document.getElementById('ba-mic-hint').textContent = 'Tap the mic and try again';
+        return;
+      }
+
+      // Update detected language
+      if (data.detected_language) {
+        baDetectedLanguage = data.detected_language;
+      }
+
+      // Show patient message
+      if (data.transcript) {
+        addPatientBubble(data.transcript);
+        baConversation.push({ role: 'user', content: data.transcript });
+      }
+
+      // Show agent response
+      if (data.agent_response) {
+        addAgentBubble(data.agent_response);
+        baConversation.push({ role: 'assistant', content: data.agent_response });
+      }
+
+      // Play audio response
+      if (data.audio) {
+        baCurrentAudio = new Audio('data:audio/wav;base64,' + data.audio);
+        baCurrentAudio.play().catch(() => {});
+      }
+
+      // Update booking panel
+      if (data.appointment_details) {
+        baAppointmentDetails = { ...baAppointmentDetails, ...data.appointment_details };
+        updateBookingPanel();
+      }
+
+      // Check if booked
+      if (data.conversation_state === 'booked') {
+        baBookingState = 'booked';
+        finalizeBooking(data.appointment_details);
+      }
+
+    } catch (e) {
+      removeTypingIndicator();
+      addAgentBubble('Sorry, there was a connection error. Please try again.');
+    }
+
+    document.getElementById('ba-mic-btn').disabled = false;
+    document.getElementById('ba-mic-hint').textContent = 'Tap the mic and speak in any language';
+  }
+
+  function updateBookingPanel() {
+    const d = baAppointmentDetails;
+    const langNames = {
+      'hi-IN': 'Hindi', 'kn-IN': 'Kannada', 'ta-IN': 'Tamil', 'te-IN': 'Telugu',
+      'ml-IN': 'Malayalam', 'bn-IN': 'Bengali', 'mr-IN': 'Marathi', 'en-IN': 'English'
+    };
+    if (d.patient_name) {
+      const el = document.getElementById('ba-d-name');
+      el.textContent = d.patient_name;
+      el.classList.add('filled');
+    }
+    if (d.reason) {
+      const el = document.getElementById('ba-d-reason');
+      el.textContent = d.reason;
+      el.classList.add('filled');
+    }
+    if (d.preferred_date) {
+      const el = document.getElementById('ba-d-date');
+      el.textContent = d.preferred_date;
+      el.classList.add('filled');
+    }
+    if (d.preferred_time) {
+      const el = document.getElementById('ba-d-time');
+      el.textContent = d.preferred_time;
+      el.classList.add('filled');
+    }
+    document.getElementById('ba-d-lang').textContent = langNames[baDetectedLanguage] || baDetectedLanguage;
+    document.getElementById('ba-d-lang').classList.add('filled');
+  }
+
+  function finalizeBooking(details) {
+    if (!details) return;
+    const newApt = {
+      id: 'APT' + String(APPOINTMENTS.length + 1).padStart(3, '0'),
+      patient_id: 'NEW',
+      patient_name: details.patient_name || 'New Patient',
+      patient_age: null,
+      patient_gender: null,
+      patient_language: null,
+      patient_conditions: details.reason ? [details.reason] : [],
+      patient_status: 'stable',
+      date: details.date || new Date().toISOString().split('T')[0],
+      date_display: details.preferred_date || 'Pending',
+      time: details.time || '10:00',
+      reason: details.reason || 'General consultation',
+      type: 'routine',
+      status: 'scheduled'
+    };
+    APPOINTMENTS.push(newApt);
+
+    document.getElementById('ba-confirmed').classList.add('visible');
+    document.getElementById('ba-summary-panel').classList.add('confirmed');
   }
 
   // ═══════════════════════════════════════════
