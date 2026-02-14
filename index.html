@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meddo — AI Superpower for Doctors</title>
-  <meta name="description" content="India's first AI superpower for doctors. Dictate notes in your language, get AI summaries before every visit, and spot patterns across patient histories.">
+  <meta name="description" content="India's first AI superpower for doctors. Dictate notes, get AI summaries, spot patterns, book appointments by voice, and send follow-ups in any Indian language.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500&family=Noto+Sans+Tamil:wght@400;500&family=Noto+Sans+Telugu:wght@400;500&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
       <div class="nav-links" id="nav-links">
         <a href="#features">Features</a>
         <a href="#how-it-works">How it Works</a>
-        <a href="#demo">Demo</a>
+        <a href="#tech">Tech Stack</a>
       </div>
       <a href="demo.html" class="nav-cta">Try Live Demo</a>
       <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
@@ -41,9 +41,9 @@
         <span class="badge">India's first</span>
         <h1>AI <span class="gold">Superpower</span><br>for Doctors.</h1>
         <p class="hero-sub">
-          Dictate notes in your language. Get AI summaries before every visit. Spot patterns no human can track. Meddo is your AI clinical memory — across every patient, every visit, every language.
+          Dictate in any language. Get AI summaries before every visit. Spot patterns across visits. Book appointments by voice. Send follow-ups patients actually understand.
         </p>
-        <p class="hero-tagline">You treat. Meddo remembers.</p>
+        <p class="hero-tagline">You focus on the patient. Meddo handles everything else.</p>
         <div class="hero-actions">
           <a href="demo.html" class="cta-primary">Try Live Demo</a>
           <a href="#how-it-works" class="cta-secondary">How it Works</a>
@@ -57,46 +57,124 @@
         <div class="widget-card">
           <div class="widget-top-bar">
             <span class="widget-logo">&#x1FA7A; Meddo AI</span>
-            <span class="lang-badge">&#x25CF; Hindi detected</span>
-          </div>
-          <div class="widget-patient-row">
-            <span>Patient: <strong>Ramesh K.</strong> &middot; #4521</span>
-            <span>10 Feb 2025</span>
+            <span class="widget-mode-label" id="hero-mode-label">Dictation</span>
           </div>
 
-          <div class="widget-two-col">
-            <!-- Left: Voice Input -->
-            <div class="widget-input-side">
-              <div class="widget-side-label">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-                Voice Input
-              </div>
-              <div class="widget-transcript indic-text" id="hero-transcript">
-                "&#x092E;&#x0930;&#x0940;&#x091C;&#x093C; &#x0915;&#x093E; sugar level fasting &#x092E;&#x0947;&#x0902; 180 &#x0906;&#x092F;&#x093E; &#x0939;&#x0948;, post-prandial 260. Metformin 1000mg OD &#x0915;&#x0930; &#x0930;&#x0939;&#x093E; &#x0939;&#x0942;&#x0901;. Glimepiride 1mg add &#x0915;&#x0930; &#x0930;&#x0939;&#x093E; &#x0939;&#x0942;&#x0901;."
+          <!-- Rotating scenes -->
+          <div class="hero-scenes" id="hero-scenes">
+            <!-- Scene 1: Dictation -->
+            <div class="hero-scene active" data-scene="0">
+              <div class="scene-flow">
+                <div class="scene-in">
+                  <div class="scene-in-label">Doctor speaks</div>
+                  <div class="scene-in-text indic-text">"&#x092E;&#x0930;&#x0940;&#x091C;&#x093C; &#x0915;&#x093E; sugar fasting 180, Metformin 1000mg OD, Glimepiride 1mg add &#x0915;&#x0930;&#x094B;"</div>
+                </div>
+                <div class="scene-arrow">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                </div>
+                <div class="scene-out">
+                  <div class="scene-out-label">Structured Notes</div>
+                  <div class="scene-out-rows">
+                    <div class="scene-row"><span class="sr-key">Dx</span><span class="sr-val">Type 2 Diabetes</span></div>
+                    <div class="scene-row"><span class="sr-key">Rx</span><span class="sr-val">Metformin 1g + Glimepiride 1mg</span></div>
+                    <div class="scene-row"><span class="sr-key">F/U</span><span class="sr-val">3 months</span></div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Right: AI Output -->
-            <div class="widget-output-side">
-              <div class="widget-side-label">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                AI Structured Notes
+            <!-- Scene 2: AI Summary -->
+            <div class="hero-scene" data-scene="1">
+              <div class="scene-flow">
+                <div class="scene-in">
+                  <div class="scene-in-label">Before next visit</div>
+                  <div class="scene-in-text">Patient Ramesh K. walking in &mdash; 3 prior visits on file</div>
+                </div>
+                <div class="scene-arrow">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                </div>
+                <div class="scene-out">
+                  <div class="scene-out-label">AI reads aloud</div>
+                  <div class="scene-out-rows">
+                    <div class="scene-row"><span class="sr-key">&#x26A0;</span><span class="sr-val">BP rising: 130 &#x2192; 140 &#x2192; 145/95</span></div>
+                    <div class="scene-row"><span class="sr-key">&#x1F50A;</span><span class="sr-val">Summary spoken in Kannada</span></div>
+                    <div class="scene-row"><span class="sr-key">&#x1F4CB;</span><span class="sr-val">Recommend specialist referral</span></div>
+                  </div>
+                </div>
               </div>
-              <div class="widget-notes" id="hero-structured">
-                <div class="note-row"><span class="note-label">Diagnosis</span><span class="note-value">Type 2 Diabetes</span></div>
-                <div class="note-row"><span class="note-label">Tests</span><span class="note-value">Fasting: 180, PP: 260</span></div>
-                <div class="note-row"><span class="note-label">Rx</span><span class="note-value">Metformin 1000mg, Glimepiride 1mg</span></div>
-                <div class="note-row"><span class="note-label">Follow-up</span><span class="note-value">3 months</span></div>
+            </div>
+
+            <!-- Scene 3: Pattern Alert -->
+            <div class="hero-scene" data-scene="2">
+              <div class="scene-flow">
+                <div class="scene-in">
+                  <div class="scene-in-label">AI scans all visits</div>
+                  <div class="scene-in-text">Headache in 3 consecutive visits. BP trending upward over 3 months.</div>
+                </div>
+                <div class="scene-arrow">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                </div>
+                <div class="scene-out">
+                  <div class="scene-out-label">Alert flagged</div>
+                  <div class="scene-out-rows">
+                    <div class="scene-row scene-alert"><span class="sr-key">&#x1F6A8;</span><span class="sr-val">Chronic hypertension risk</span></div>
+                    <div class="scene-row"><span class="sr-key">&#x1F4C8;</span><span class="sr-val">3-visit BP trend detected</span></div>
+                    <div class="scene-row"><span class="sr-key">&#x1F3AF;</span><span class="sr-val">Shown before next visit starts</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Scene 4: Voice Booking -->
+            <div class="hero-scene" data-scene="3">
+              <div class="scene-flow">
+                <div class="scene-in">
+                  <div class="scene-in-label">Patient calls</div>
+                  <div class="scene-in-text indic-text">"&#x092E;&#x0941;&#x091D;&#x0947; &#x0915;&#x0932; &#x0938;&#x0941;&#x092C;&#x0939; 10 &#x092C;&#x091C;&#x0947; appointment &#x091A;&#x093E;&#x0939;&#x093F;&#x090F;"</div>
+                </div>
+                <div class="scene-arrow">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                </div>
+                <div class="scene-out">
+                  <div class="scene-out-label">AI books it</div>
+                  <div class="scene-out-rows">
+                    <div class="scene-row"><span class="sr-key">&#x1F4C5;</span><span class="sr-val">Tomorrow, 10:00 AM</span></div>
+                    <div class="scene-row"><span class="sr-key">&#x1F464;</span><span class="sr-val">Anita Sharma &mdash; Fever</span></div>
+                    <div class="scene-row"><span class="sr-key">&#x2705;</span><span class="sr-val">Confirmed in Hindi via voice</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Scene 5: Follow-up -->
+            <div class="hero-scene" data-scene="4">
+              <div class="scene-flow">
+                <div class="scene-in">
+                  <div class="scene-in-label">Doctor types</div>
+                  <div class="scene-in-text">"Please get your blood test done before next visit."</div>
+                </div>
+                <div class="scene-arrow">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                </div>
+                <div class="scene-out">
+                  <div class="scene-out-label">Patient receives</div>
+                  <div class="scene-out-rows">
+                    <div class="scene-row"><span class="sr-key">&#x1F310;</span><span class="sr-val indic-text">&#x0C85;&#x0CA6;&#x0CB0; &#x0CB0;&#x0C95;&#x0CCD;&#x0CA4; &#x0CAA;&#x0CB0;&#x0CC0;&#x0C95;&#x0CCD;&#x0CB7;&#x0CC6; &#x0CAE;&#x0CBE;&#x0CA1;&#x0CBF;&#x0CB8;&#x0CBF;</span></div>
+                    <div class="scene-row"><span class="sr-key">&#x1F50A;</span><span class="sr-val">Voice message in Kannada</span></div>
+                    <div class="scene-row"><span class="sr-key">&#x2705;</span><span class="sr-val">Delivered &middot; Read</span></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="widget-bottom-bar">
-            <span class="widget-example-label">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-              Live example &middot; Try the full demo below
-            </span>
-            <span class="widget-powered">Powered by Sarvam AI</span>
+          <!-- Progress dots -->
+          <div class="hero-scene-nav">
+            <button class="hero-dot active" data-dot="0">Dictate</button>
+            <button class="hero-dot" data-dot="1">Summarize</button>
+            <button class="hero-dot" data-dot="2">Alert</button>
+            <button class="hero-dot" data-dot="3">Book</button>
+            <button class="hero-dot" data-dot="4">Follow-up</button>
           </div>
         </div>
       </div>
@@ -169,12 +247,14 @@
   <section class="how-section" id="how-it-works">
     <div class="container">
       <h2 class="section-title">How Meddo works</h2>
-      <p class="section-subtitle">Three modes. Every patient interaction covered.</p>
+      <p class="section-subtitle">Five modes. Every patient interaction covered.</p>
 
       <div class="modes-tabs">
         <button class="mode-tab active" data-mode="dictate">Dictate</button>
         <button class="mode-tab" data-mode="summarize">Summarize</button>
         <button class="mode-tab" data-mode="alert">Pattern Alert</button>
+        <button class="mode-tab" data-mode="book">Voice Booking</button>
+        <button class="mode-tab" data-mode="followup">Follow-up</button>
       </div>
 
       <div class="mode-content active" id="mode-dictate">
@@ -251,6 +331,56 @@
           <span>All records</span> &#x2192; <span>Sarvam-M</span> &#x2192; <span>Flag</span> &#x2192; <span>Bulbul V3 alert</span>
         </div>
       </div>
+
+      <div class="mode-content" id="mode-book">
+        <div class="mode-flow">
+          <div class="mode-step">
+            <div class="mode-step-icon">&#x1F5E3;&#xFE0F;</div>
+            <h4>Patient speaks</h4>
+            <p class="indic-text">"&#x092E;&#x0941;&#x091D;&#x0947; &#x0915;&#x0932; &#x0938;&#x0941;&#x092C;&#x0939; 10 &#x092C;&#x091C;&#x0947; appointment &#x091A;&#x093E;&#x0939;&#x093F;&#x090F;"</p>
+          </div>
+          <div class="mode-arrow">&#x2192;</div>
+          <div class="mode-step">
+            <div class="mode-step-icon">&#x1F916;</div>
+            <h4>AI agent converses</h4>
+            <p>Collects name, reason, date, time through natural multi-turn dialogue</p>
+          </div>
+          <div class="mode-arrow">&#x2192;</div>
+          <div class="mode-step">
+            <div class="mode-step-icon">&#x2705;</div>
+            <h4>Appointment booked</h4>
+            <p>Confirmed in patient's language with voice confirmation</p>
+          </div>
+        </div>
+        <div class="mode-pipeline">
+          <span>Audio</span> &#x2192; <span>Saarika STT</span> &#x2192; <span>Sarvam-M Agent</span> &#x2192; <span>Bulbul V3</span> &#x2192; <span>Book</span>
+        </div>
+      </div>
+
+      <div class="mode-content" id="mode-followup">
+        <div class="mode-flow">
+          <div class="mode-step">
+            <div class="mode-step-icon">&#x1F468;&#x200D;&#x2695;&#xFE0F;</div>
+            <h4>Doctor sends message</h4>
+            <p>"Please get your blood test done before the next visit."</p>
+          </div>
+          <div class="mode-arrow">&#x2192;</div>
+          <div class="mode-step">
+            <div class="mode-step-icon">&#x1F310;</div>
+            <h4>AI translates</h4>
+            <p class="indic-text">Message translated to patient's preferred language automatically</p>
+          </div>
+          <div class="mode-arrow">&#x2192;</div>
+          <div class="mode-step">
+            <div class="mode-step-icon">&#x1F50A;</div>
+            <h4>Voice message sent</h4>
+            <p>Patient receives text + audio message they can understand</p>
+          </div>
+        </div>
+        <div class="mode-pipeline">
+          <span>Doctor text</span> &#x2192; <span>Sarvam-M Translate</span> &#x2192; <span>Bulbul V3</span> &#x2192; <span>Patient</span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -293,232 +423,27 @@
           <h3>Multilingual</h3>
           <p>Doctor speaks Kannada. File in English. Summary in Tamil. Language is never a barrier.</p>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- SECTION 6: LIVE DEMO — DICTATION -->
-  <!-- ═══════════════════════════════════════════ -->
-  <section class="demo-section" id="demo">
-    <div class="container">
-      <h2 class="section-title">Try Meddo — Dictate a patient note</h2>
-      <p class="section-subtitle">Press and hold the mic button. Speak in any Indian language. See structured notes appear.</p>
-
-      <div class="demo-samples">
-        <p class="demo-samples-label">Or try a pre-recorded sample:</p>
-        <div class="demo-sample-btns">
-          <button class="sample-btn" data-demo="dictation_kn">P001 Ramesh K. · &#x0C95;&#x0CA8;&#x0CCD;&#x0CA8;&#x0CA1; · Knee Pain</button>
-          <button class="sample-btn" data-demo="dictation_hi">P003 Anand M. · &#x0939;&#x093F;&#x0928;&#x094D;&#x0926;&#x0940; · Diabetes</button>
-          <button class="sample-btn" data-demo="dictation_ta">P002 Priya S. · &#x0BA4;&#x0BAE;&#x0BBF;&#x0BB4;&#x0BCD; · Child Fever</button>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F4DE;</div>
+          <h3>Voice Appointment Booking</h3>
+          <p>Patients call and speak in their language. AI agent books the appointment — no receptionist needed.</p>
         </div>
-      </div>
-
-      <div class="demo-container">
-        <div class="demo-panel demo-dictation">
-          <div class="demo-panel-header">
-            <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-              <line x1="12" y1="19" x2="12" y2="23"/>
-              <line x1="8" y1="23" x2="16" y2="23"/>
-            </svg>
-            DICTATION
-          </div>
-
-          <div class="demo-mic-area">
-            <button class="mic-btn" id="dictate-btn">
-              <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" y1="19" x2="12" y2="23"/>
-                <line x1="8" y1="23" x2="16" y2="23"/>
-              </svg>
-              <span class="mic-label">Click to dictate</span>
-            </button>
-            <div class="recording-indicator" id="recording-indicator">
-              <span class="pulse-dot"></span> Recording...
-            </div>
-          </div>
-
-          <div class="demo-sample-prompt">
-            <div class="sample-prompt-top">
-              <div class="sample-prompt-label">Read this aloud</div>
-              <select class="sample-lang-select" id="sample-lang-select">
-                <option value="en">English</option>
-                <option value="hi">हिन्दी (Hindi)</option>
-                <option value="kn">ಕನ್ನಡ (Kannada)</option>
-                <option value="ta">தமிழ் (Tamil)</option>
-                <option value="te">తెలుగు (Telugu)</option>
-                <option value="ml">മലയാളം (Malayalam)</option>
-                <option value="bn">বাংলা (Bengali)</option>
-                <option value="mr">मराठी (Marathi)</option>
-                <option value="gu">ગુજરાતી (Gujarati)</option>
-              </select>
-            </div>
-            <p class="sample-prompt-text" id="sample-prompt-text">"P001 Ramesh K. came in today with severe headache and dizziness for the past 3 days. BP is 150 over 95, pulse 82. Diagnosis is hypertensive episode. Prescribing Amlodipine 5mg once daily and Paracetamol 500mg as needed. Order blood test CBC and lipid profile. Follow up in 2 weeks."</p>
-          </div>
-
-          <div class="demo-transcript-area">
-            <div class="transcript-label">Transcript:</div>
-            <div class="transcript-text indic-text" id="dictation-transcript">
-              Your dictation will appear here...
-            </div>
-          </div>
-
-          <div class="detected-lang" id="detected-lang"></div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F4AC;</div>
+          <h3>Follow-up Messages</h3>
+          <p>Send follow-ups in the patient's language. Auto-translated, with a voice message they can listen to.</p>
         </div>
-
-        <div class="demo-panel demo-output">
-          <div class="demo-panel-header">
-            <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-            </svg>
-            STRUCTURED OUTPUT
-          </div>
-
-          <div class="structured-notes" id="structured-output">
-            <div class="structured-placeholder">
-              Structured notes will appear here after you dictate...
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- SECTION 7: PATIENT TIMELINE DEMO -->
-  <!-- ═══════════════════════════════════════════ -->
-  <section class="timeline-section" id="timeline">
-    <div class="container">
-      <h2 class="section-title">Patient Timeline</h2>
-      <p class="section-subtitle">Every visit, every pattern, every insight — available the moment your patient walks in.</p>
-
-      <div class="timeline-showcase">
-        <!-- Patient Profile Card -->
-        <div class="patient-profile-card">
-          <div class="profile-avatar">RK</div>
-          <h3 class="profile-name">Ramesh K.</h3>
-          <div class="profile-meta">52 yrs &middot; Male &middot; B+</div>
-          <div class="profile-conditions">
-            <span class="condition-chip critical">Hypertension</span>
-            <span class="condition-chip">Tension Headache</span>
-          </div>
-          <div class="profile-stats">
-            <div class="stat-item">
-              <span class="stat-value">3</span>
-              <span class="stat-label">Visits</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-value stat-alert">145/95</span>
-              <span class="stat-label">Last BP</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-value">Kannada</span>
-              <span class="stat-label">Language</span>
-            </div>
-          </div>
-          <div class="profile-actions">
-            <button class="hear-summary-btn" id="hear-summary-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-              </svg>
-              Hear AI Summary
-            </button>
-            <a href="calendar.html" class="view-dashboard-link">
-              Open Appointments
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-            </a>
-          </div>
-        </div>
-
-        <!-- Timeline Column -->
-        <div class="timeline-column">
-          <!-- AI Insight Banner -->
-          <div class="ai-insight-banner">
-            <div class="insight-icon-wrap">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            </div>
-            <div class="insight-content">
-              <span class="insight-badge">AI INSIGHT</span>
-              <p class="insight-main">BP rising: 130/85 &rarr; 140/90 &rarr; 145/95</p>
-              <p class="insight-sub">Headache in 3 consecutive visits &middot; <strong>Recommend: Specialist referral</strong></p>
-            </div>
-          </div>
-
-          <!-- Visit Cards -->
-          <div class="timeline-v2" id="patient-timeline">
-            <div class="timeline-visit-card urgent-level">
-              <div class="visit-number-badge urgent">3</div>
-              <div class="visit-card-body">
-                <div class="visit-card-top">
-                  <span class="visit-date-v2">10 Feb 2025</span>
-                  <span class="visit-tag-v2 urgent">BP still elevated</span>
-                </div>
-                <div class="visit-vitals-row">
-                  <span class="vital-chip vital-alert">BP: 145/95</span>
-                  <span class="vital-chip">Pulse: 85</span>
-                </div>
-                <div class="visit-detail-text">Headache continues &middot; Chest tightness &middot; Rx: Amlodipine 10mg OD</div>
-                <div class="visit-card-footer">
-                  <span class="visit-doctor">Dr. Suresh</span>
-                  <span class="visit-lang">Kannada</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="timeline-visit-card followup-level">
-              <div class="visit-number-badge followup">2</div>
-              <div class="visit-card-body">
-                <div class="visit-card-top">
-                  <span class="visit-date-v2">10 Jan 2025</span>
-                  <span class="visit-tag-v2 followup">Headache persistent</span>
-                </div>
-                <div class="visit-vitals-row">
-                  <span class="vital-chip vital-warning">BP: 140/90</span>
-                  <span class="vital-chip">Pulse: 82</span>
-                </div>
-                <div class="visit-detail-text">Dizziness started &middot; Rx: Amlodipine 5mg OD &middot; ECG ordered</div>
-                <div class="visit-card-footer">
-                  <span class="visit-doctor">Dr. Suresh</span>
-                  <span class="visit-lang">Kannada</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="timeline-visit-card routine-level">
-              <div class="visit-number-badge routine">1</div>
-              <div class="visit-card-body">
-                <div class="visit-card-top">
-                  <span class="visit-date-v2">15 Dec 2024</span>
-                  <span class="visit-tag-v2 routine">Routine checkup</span>
-                </div>
-                <div class="visit-vitals-row">
-                  <span class="vital-chip">BP: 130/85</span>
-                  <span class="vital-chip">Pulse: 78</span>
-                </div>
-                <div class="visit-detail-text">Mild headache &middot; Rest advised &middot; Paracetamol 500mg as needed</div>
-                <div class="visit-card-footer">
-                  <span class="visit-doctor">Dr. Suresh</span>
-                  <span class="visit-lang">Kannada</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F4C8;</div>
+          <h3>Analytics Dashboard</h3>
+          <p>Track appointment volume, language distribution, peak hours, and urgency trends at a glance.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════ -->
-  <!-- SECTION 8: TECH STACK / POWERED BY -->
+  <!-- SECTION 6: TECH STACK / POWERED BY -->
   <!-- ═══════════════════════════════════════════ -->
   <section class="tech-section" id="tech">
     <div class="container">
@@ -613,14 +538,14 @@
       <div class="footer-top">
         <div class="footer-brand">
           <h3>&#x1FA7A; Meddo</h3>
-          <p class="footer-tagline">You treat. Meddo remembers.</p>
-          <p class="footer-desc">India's first AI clinical assistant — dictation, summaries, and pattern detection in your language.</p>
+          <p class="footer-tagline">You focus on the patient. Meddo handles everything else.</p>
+          <p class="footer-desc">India's first AI clinical assistant — dictation, summaries, pattern detection, voice booking, and follow-ups in your language.</p>
         </div>
         <div class="footer-col">
           <h4>Product</h4>
           <a href="#features">Features</a>
           <a href="#how-it-works">How it Works</a>
-          <a href="#demo">Live Demo</a>
+          <a href="demo.html">Live Demo</a>
         </div>
         <div class="footer-col">
           <h4>Built With</h4>

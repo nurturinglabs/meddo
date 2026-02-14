@@ -80,4 +80,38 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Hero scene rotation
+  const scenes = document.querySelectorAll('.hero-scene');
+  const dots = document.querySelectorAll('.hero-dot');
+  const modeLabel = document.getElementById('hero-mode-label');
+  const modeNames = ['Dictation', 'AI Summary', 'Pattern Alert', 'Voice Booking', 'Follow-up'];
+
+  if (scenes.length > 0) {
+    let currentScene = 0;
+    let heroInterval;
+
+    function showScene(index) {
+      scenes.forEach(s => s.classList.remove('active'));
+      dots.forEach(d => d.classList.remove('active'));
+      scenes[index].classList.add('active');
+      dots[index].classList.add('active');
+      if (modeLabel) modeLabel.textContent = modeNames[index] || '';
+      currentScene = index;
+    }
+
+    function nextScene() {
+      showScene((currentScene + 1) % scenes.length);
+    }
+
+    heroInterval = setInterval(nextScene, 4000);
+
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        clearInterval(heroInterval);
+        showScene(parseInt(dot.dataset.dot));
+        heroInterval = setInterval(nextScene, 4000);
+      });
+    });
+  }
 });
